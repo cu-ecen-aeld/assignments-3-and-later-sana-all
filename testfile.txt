@@ -1,0 +1,9 @@
+home is $HOME
+Remove trailing newline
+Read home is $HOME from testfile.txt
+execv /bin/echo home is $HOME returned home is $HOME
+/home/aa/EducationMSEE/Linux_System_Programming_and_Introduction_to_Buildroot/assignments/assign-3/assignments-3-and-later-sana-all/assignment-autotest/test/assignment3/Test_systemcalls.c:72:test_exec_redirect_calls:PASS
+
+-----------------------
+3 Tests 0 Failures 0 Ignored 
+OK
