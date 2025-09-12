@@ -129,6 +129,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...) {
     }
 
     // Redirect standard output to the file
+    // Because if you use write it is 
     int loti = dup2(fd, STDOUT_FILENO);
     if (loti == -1) {
         perror("dup2 failed");
