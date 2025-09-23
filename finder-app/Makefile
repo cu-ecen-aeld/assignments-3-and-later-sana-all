@@ -1,10 +1,21 @@
 CC = $(CROSS_COMPILE)gcc
-# CC = aarch64-none-linux-gnu-gcc
+CFLAGS = -Wall -g
 
-all: writer
+TARGET = writer
 
-writer: writer.c
-	$(CC) writer.c -o writer
-   
-clean :
-	rm -f *.o  writer
+SRC = writer.c
+OBJ = $(SRC:.c=.o)
+
+all: $(TARGET)
+
+# Link the executable
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
+
+# Compile .c to .o
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Clean target
+clean:
+	rm -f $(TARGET) $(OBJ)
