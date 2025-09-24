@@ -33,7 +33,7 @@ rm -rf "${WRITEDIR}"
 
 # create $WRITEDIR if not assignment1
 # assignment=`cat ../conf/assignment.txt`
-assignment=`cat /home/conf/assignment.txt`
+assignment=`cat /etc/finder-app/conf/assignment.txt`
 
 if [ $assignment != 'assignment1' ]
 then
@@ -58,7 +58,7 @@ do
 	./writer.sh "$WRITEDIR/${username}$i.txt" "$WRITESTR"
 done
 
-OUTPUTSTRING=$(/home/finder.sh "$WRITEDIR" "$WRITESTR")
+OUTPUTSTRING=$(/usr/bin/finder.sh "$WRITEDIR" "$WRITESTR")
 
 # remove temporary directories
 rm -rf /tmp/aeld-data
