@@ -57,10 +57,15 @@ fi
 #make clean
 #make
 
-for i in $( seq 1 $NUMFILES)
+for i in $(seq 1 $NUMFILES)
 do
-  writer.sh "$WRITEDIR/${username}$i.txt" "$WRITESTR" 
-	#writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
+    echo "RARA 0"
+    if ./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"; then
+        echo "Writer executed successfully"
+    else
+        echo "Writer execution failed"
+    fi
+    echo "RARA 1"
 done
 
 #OUTPUTSTRING=$(/usr/bin/finder.sh "$WRITEDIR" "$WRITESTR")

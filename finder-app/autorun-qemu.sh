@@ -2,6 +2,7 @@
 cd $(dirname $0)
 echo "Running test script"
 echo $(ls)
+echo "going directory home"
 cd /home
 echo $(ls)
 ./finder-test.sh
