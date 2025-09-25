@@ -1,7 +1,7 @@
 #!/bin/sh
 cd $(dirname $0)
 echo "Running test script"
-# cd /home
+cd /home
 ./finder-test.sh
 rc=$?
 if [ ${rc} -eq 0 ]; then
