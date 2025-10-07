@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-    echo "Error: Both parameters (directory and search string) must be specified."
+    echo "Error: Both parameters (directory and search string) must be specified. OKAYYY."
     exit 1
 fi
 
