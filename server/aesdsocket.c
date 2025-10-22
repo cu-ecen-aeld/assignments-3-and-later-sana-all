@@ -28,7 +28,8 @@ void error(const char *msg)
 	exit(1);
 }
 
-void signal_handler(int n)
+// void signal_handler(int n)
+void signal_handler()
 {
 	syslog(LOG_INFO, "Caught signal, exiting");
 	sig_quit = true;
@@ -66,10 +67,11 @@ void send_data_to_client(int sockfd)
 }
 
 
-int main(int argc, char *argv[])
+// int main(int argc, char *argv[]) // will uncomment later
+int main()
 {
 	int sockfd, newsockfd, portno;
-	char buffer[BUFFER_SIZE];
+	// char buffer[BUFFER_SIZE];
 
 	struct sockaddr_in serv_addr;
 	// socklen_t clilen;
