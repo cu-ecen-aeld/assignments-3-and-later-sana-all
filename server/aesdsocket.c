@@ -67,9 +67,20 @@ void send_data_to_client(int sockfd)
 }
 
 
-// int main(int argc, char *argv[]) // will uncomment later
-int main()
+int main(int argc, char *argv[]) // will uncomment later
 {
+	// int demon_mode = 0;
+
+	if( argc == 2 )
+	{
+		if(strcmp(argv[1], "-d") != 0)
+		{
+			error("Wrong parameter inputted, try -d for daemon mode");
+		}
+		// demon_mode = 1;
+	}
+
+
 	int sockfd, newsockfd, portno;
 	// char buffer[BUFFER_SIZE];
 
