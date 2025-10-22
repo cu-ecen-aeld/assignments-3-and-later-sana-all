@@ -37,7 +37,7 @@ void signal_handler()
 
 void send_data_to_client(int sockfd)
 {
-	int fd = open("/var/tmp/aesdsocketdata", O_RDWR|O_CREAT|O_APPEND, 0600);
+	int fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 	if(fd < 0)
 	{
 		error("send_data_to_client, open function error...");
