@@ -25,7 +25,7 @@ bool sig_quit = false;
 void error(const char *msg)
 {
 	perror(msg);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 // void signal_handler(int n)
@@ -44,9 +44,7 @@ void send_data_to_client(int sockfd)
 	}
 	char buffer[BUFFER_SIZE];
 	bzero(buffer, BUFFER_SIZE);
-	// n = read(sockfd, buffer, BUFFER_SIZE);
-	// if(n < 0)
-	// 	error("Error on read");
+
 
 	ssize_t bytes_received;
 	bytes_received = recv(sockfd, buffer, BUFFER_SIZE - 1, 0);
@@ -85,12 +83,27 @@ int main(int argc, char *argv[]) // will uncomment later
 	// char buffer[BUFFER_SIZE];
 
 	struct sockaddr_in serv_addr;
-	// socklen_t clilen;
 
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+	struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    struct addrinfo *server_info;
+    int chapi = getaddrinfo(NULL, PORT, &hints, &server_info);
+    if (chapi != 0) {
+        syslog(LOG_ERR, "getaddrinfo: %s", gai_strerror(chapi));
+        exit(EXIT_FAILURE);
+    }
+
+	// sockfd = socket(PF_INET, SOCK_STREAM, 0); // AF_INET
+	sockfd = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 	portno = atoi(PORT);
 
 
+	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(portno);
@@ -108,6 +121,8 @@ int main(int argc, char *argv[]) // will uncomment later
   //       closelog();
 		error("listening failed...");
 	}
+
+	printf("Server is listening on port %s\n", PORT);
 
 
 	struct sigaction new_action;
