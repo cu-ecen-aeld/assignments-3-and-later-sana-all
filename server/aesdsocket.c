@@ -91,15 +91,29 @@ int main(int argc, char *argv[]) // will uncomment later
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    struct addrinfo *server_info;
+    struct addrinfo *server_info; // node
+
     int chapi = getaddrinfo(NULL, PORT, &hints, &server_info);
     if (chapi != 0) {
         syslog(LOG_ERR, "getaddrinfo: %s", gai_strerror(chapi));
-        exit(EXIT_FAILURE);
+        error("chapi failed...");
     }
 
 	// sockfd = socket(PF_INET, SOCK_STREAM, 0); // AF_INET
 	sockfd = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
+
+	if(sockfd < 0)
+	{
+		error("sockfd failed...");
+	}
+
+
+	// int optval = 1;
+ //    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+ //        syslog(LOG_ERR, "setsockopt: %s", strerror(errno));
+ //        exit(EXIT_FAILURE);
+ //    }
+
 	portno = atoi(PORT);
 
 
@@ -108,17 +122,16 @@ int main(int argc, char *argv[]) // will uncomment later
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(portno);
 
-	if( bind(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0)
+	if( bind(sockfd, server_info->ai_addr, server_info->ai_addrlen) < 0)
 	{
 		error("binding failed...");
 	}
+	freeaddrinfo(server_info);
 
-	// listen(sockfd, 5);
-	if(listen(sockfd,5) < 0)
+
+	if(listen(sockfd,10) < 0)
 	{
-		// freeaddrinfo(serv_info);
-  //       close(my_socket);
-  //       closelog();
+
 		error("listening failed...");
 	}
 
@@ -137,7 +150,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
     while( sig_quit == false )
     {
-    	struct sockaddr_in cli_addr;
+    	struct sockaddr_storage cli_addr;
     	socklen_t clilen;
     	clilen = sizeof(cli_addr);
     	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
@@ -146,13 +159,30 @@ int main(int argc, char *argv[]) // will uncomment later
 			error("accepting failed...");
 		}
 
+		printf("OLOOOOOOOOOOOOL \n");
 
-		char client_ip[INET_ADDRSTRLEN]; // for ipv6 client_ip[INET6_ADDRSTRLEN];
+		bool is_ipv4 = (cli_addr.ss_family == AF_INET);
+		char client_ip[INET6_ADDRSTRLEN]; // for ipv4 client_ip[INET_ADDRSTRLEN];
+
+
+		if (is_ipv4) {
+	        struct sockaddr_in *addr = (struct sockaddr_in *)&cli_addr;
+	        if (inet_ntop(AF_INET, &addr->sin_addr, client_ip, sizeof(client_ip)) == NULL) {
+	            error("inet_ntop failed...");
+	        }
+	    } else {
+	        struct sockaddr_in6 *addr = (struct sockaddr_in6 *)&cli_addr;
+	        if (inet_ntop(AF_INET6, &addr->sin6_addr, client_ip, sizeof(client_ip)) == NULL) {
+	            error("inet_ntop failed...");
+	        }
+	    }
+
+
 		// if( getnameinfo((struct sockaddr *) &cli_addr, sizeof(cli_addr) ) ) // i commented this because getnameinfo is very very long
-		if( inet_ntop(AF_INET, &cli_addr.sin_addr, client_ip, sizeof(client_ip)) == NULL )
-		{
-			error("inet_ntop failed...");
-		}
+		// if( inet_ntop(cli_addr.ss_family, &cli_addr.sin_addr, client_ip, sizeof(client_ip)) == NULL )
+		// {
+		// 	error("inet_ntop failed...");
+		// }
 		syslog(LOG_INFO,  "Accepted connection from %s", client_ip);
 
 
