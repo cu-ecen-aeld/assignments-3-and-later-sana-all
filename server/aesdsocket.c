@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     ssize_t bytes_received;
     int daemon_mode = 0;
 
-    // openlog("aesdsocket", LOG_PID, LOG_USER);
+    // openlog("aesdsocket", LOG_PID, LOG_USER); // erase 1
 
     if (argc > 1 && strcmp(argv[1], "-d") == 0) {
         daemon_mode = 1;
@@ -149,6 +149,6 @@ int main(int argc, char *argv[]) {
         syslog(LOG_INFO, "Closed connection from %s", client_ip);
     }
 
-    cleanup();
+    // cleanup();
     return 0;
 }
