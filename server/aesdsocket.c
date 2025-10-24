@@ -139,34 +139,34 @@ int main(int argc, char *argv[]) // will uncomment later
 
 	if( daemon_mode == 1 )
 	{
-		int dae = daemon(1,1);
-		if(dae < 0){
-			error("daemon failed");
-			// perror("Daemonization failed");
-			// exit(EXIT_FAILURE);
-		}
+		// int dae = daemon(1,1);
+		// if(dae < 0){
+		// 	error("daemon failed");
+		// 	// perror("Daemonization failed");
+		// 	// exit(EXIT_FAILURE);
+		// }
 
-		if(dae == 1){
-			exit(EXIT_SUCCESS);
-		}
-		// pid_t pid = fork();
+		// if(dae == 1){
+		// 	exit(EXIT_SUCCESS);
+		// }
+		pid_t pid = fork();
     
-  //       if (pid < 0)
-  //       {
-  //           // syslog(LOG_ERR, "Error with forking \n");
-  //           // freeaddrinfo(serv_info);
-  //           // close(my_socket);
-  //           // closelog();
-  //           // exit(1);
-  //           error("daemon failed...");
-  //       }
+        if (pid < 0)
+        {
+            // syslog(LOG_ERR, "Error with forking \n");
+            // freeaddrinfo(serv_info);
+            // close(my_socket);
+            // closelog();
+            // exit(1);
+            error("daemon failed...");
+        }
         
-  //       if (pid > 0)
-  //       {
-  //           exit(0);
-  //       }
+        if (pid > 0)
+        {
+            exit(0);
+        }
         
-  //       setsid();
+        setsid();
 	}
 
 
