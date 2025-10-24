@@ -67,7 +67,7 @@ void send_data_to_client(int sockfd)
 
 int main(int argc, char *argv[]) // will uncomment later
 {
-	// int demon_mode = 0;
+	int daemon_mode = 0;
 
 	if( argc == 2 )
 	{
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) // will uncomment later
 		{
 			error("Wrong parameter inputted, try -d for daemon mode");
 		}
-		// demon_mode = 1;
+		daemon_mode = 1;
 	}
 
 
@@ -135,7 +135,39 @@ int main(int argc, char *argv[]) // will uncomment later
 		error("listening failed...");
 	}
 
-	printf("Server is listening on port %s\n", PORT);
+	printf("Server is listeasdasddsaning on port %s\n", PORT);
+
+	if( daemon_mode == 1 )
+	{
+		int dae = daemon(1,1);
+		if(dae < 0){
+			error("daemon failed");
+			// perror("Daemonization failed");
+			// exit(EXIT_FAILURE);
+		}
+
+		if(dae == 1){
+			exit(EXIT_SUCCESS);
+		}
+		// pid_t pid = fork();
+    
+  //       if (pid < 0)
+  //       {
+  //           // syslog(LOG_ERR, "Error with forking \n");
+  //           // freeaddrinfo(serv_info);
+  //           // close(my_socket);
+  //           // closelog();
+  //           // exit(1);
+  //           error("daemon failed...");
+  //       }
+        
+  //       if (pid > 0)
+  //       {
+  //           exit(0);
+  //       }
+        
+  //       setsid();
+	}
 
 
 	struct sigaction new_action;
@@ -156,10 +188,13 @@ int main(int argc, char *argv[]) // will uncomment later
     	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
 		if(newsockfd < 0)
 		{
-			error("accepting failed...");
+			// error("accepting failed...");
+
+			printf("accepting failed... \n");
+			continue;
 		}
 
-		printf("OLOOOOOOOOOOOOL \n");
+		printf("OLOOOOOOOOOOOOL 222 \n");
 
 		bool is_ipv4 = (cli_addr.ss_family == AF_INET);
 		char client_ip[INET6_ADDRSTRLEN]; // for ipv4 client_ip[INET_ADDRSTRLEN];
@@ -201,8 +236,8 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-
-
+    // cleanup();
+    return 0;
 
 
 }
