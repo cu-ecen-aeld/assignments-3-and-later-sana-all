@@ -249,7 +249,7 @@ int main(int argc, char *argv[]) // will uncomment later
 		}
 
 		close(newsockfd);
-
+		close(data_fd);
 
     }
 
@@ -266,6 +266,12 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
     // cleanup();
+    if (remove("/var/tmp/aesdsocketdata") == 0) {
+    	printf("File deleted successfully.\n");
+	} else {
+	    perror("Error deleting file");
+	}
+    close(sockfd);
     return 0;
 
 
