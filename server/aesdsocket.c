@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     int client_fd;
     char client_ip[INET6_ADDRSTRLEN];
     char buffer[BUFFER_SIZE];
-    ssize_t bytes_received;
+    // ssize_t bytes_received;
     int daemon_mode = 0;
 
     // openlog("aesdsocket", LOG_PID, LOG_USER);
