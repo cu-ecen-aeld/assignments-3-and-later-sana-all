@@ -1,20 +1,17 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -Werror -g
-CROSS_COMPILE ?=
-TARGET=$(CROSS_COMPILE)gcc
-# OUTPUT = server/aesdsocket
-# SRC = server/aesdsocket.c
-OUTPUT=aesdsocket
-SRC=aesdsocket.c
+#Cross-compiling check
+CC ?= $(CROSS_COMPILE)gcc
+CFLAGS ?= -Wall -Werror -O0 -pthread
+LDFLAGS ?= -pthread
+TARGET ?= aesdsocket
 
-all: $(OUTPUT)
+all: aesdsocket
+default: aesdsocket
 
-default: all
+aesdsocket: aesdsocket.c
+	$(CC) $(CFLAGS) aesdsocket.c -o $(TARGET) $(LDFLAGS)
 
-$(OUTPUT): $(SRC)
-	$(TARGET) $(CFLAGS) -o $@ $^
-
+#clean target
 clean:
-	rm -f $(OUTPUT)
+	rm -f aesdsocket *.o
 
 .PHONY: all default clean
