@@ -70,7 +70,6 @@ int main(int argc, char *argv[]) // will uncomment later
         error("chapi failed...");
     }
 
-	// sockfd = socket(PF_INET, SOCK_STREAM, 0); // AF_INET
 	sockfd = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 	if(sockfd < 0)
 	{
@@ -79,18 +78,10 @@ int main(int argc, char *argv[]) // will uncomment later
 
 	int opt = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        // perror("setsockopt failed");
-        // close(sockfd);
-        // exit(EXIT_FAILURE);
         error("setsockopt failed...");
     }
 
 
-	// int optval = 1;
- //    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
- //        syslog(LOG_ERR, "setsockopt: %s", strerror(errno));
- //        exit(EXIT_FAILURE);
- //    }
 
 	portno = atoi(PORT);
 
@@ -127,25 +118,6 @@ int main(int argc, char *argv[]) // will uncomment later
 		if(dae == 1){
 			exit(EXIT_SUCCESS);
 		}
-		// pid_t pid = fork();
-    
-  //       if (pid < 0)
-  //       {
-  //           // syslog(LOG_ERR, "Error with forking \n");
-  //           // freeaddrinfo(serv_info);
-  //           // close(my_socket);
-  //           // closelog();
-  //           // exit(1);
-  //           error("daemon failed...");
-  //       }
-        
-  //       if (pid > 0)
-  //       {
-  //           exit(0);
-  //       }
-        
-  //       setsid();
-	}
 
 
 	struct sigaction new_action;
@@ -253,15 +225,6 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
-
-
-
-
-
-
-
-
-	// int fd = open("/var/tmp/aesdsocketdata", O_RDWR|O_CREAT|O_APPEND, 0600);
 
 
 

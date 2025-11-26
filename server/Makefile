@@ -1,4 +1,9 @@
 #Cross-compiling check
+# Makefile
+# To build and clean the aesdsocket utility
+# Author: Mcrey Fonacier <polpokpol2@gmail.com>
+
+
 CC ?= $(CROSS_COMPILE)gcc
 CFLAGS ?= -Wall -Werror -O0 -pthread
 LDFLAGS ?= -pthread
