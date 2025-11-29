@@ -76,6 +76,9 @@ void *handle_client(void *arg){
 	    perror("Error deleting file");
 	}
 
+	close(newsockfd);
+    free(t_data);
+
 	return NULL;
 }
 
