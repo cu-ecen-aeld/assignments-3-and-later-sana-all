@@ -69,6 +69,12 @@ void *handle_client(void *arg){
         syslog(LOG_ERR, "error sending data to client...");
     }
 
+    if (remove("/var/tmp/aesdsocketdata") == 0) {
+    	printf("File deleted successfully.\n");
+	} else {
+	    perror("Error deleting file");
+	}
+
 	return NULL;
 }
 
