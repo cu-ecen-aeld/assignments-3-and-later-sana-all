@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <pthread.h>
 // #include "queue.h"
 
 
