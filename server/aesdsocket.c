@@ -321,6 +321,6 @@ int main(int argc, char *argv[]) // will uncomment later
 	pthread_mutex_destroy(&mutex);
     close(sockfd);
     return 0;
-
+}
 
 }
