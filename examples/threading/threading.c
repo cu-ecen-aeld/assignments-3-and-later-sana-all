@@ -60,6 +60,7 @@ bool start_thread_obtaining_mutex(pthread_t *thread, pthread_mutex_t *mutex, int
     data->thread_complete_success = false;
 
     if( pthread_create(thread, NULL, threadfunc, data) != 0 ){
+        free(data);
         return false;
     }
 

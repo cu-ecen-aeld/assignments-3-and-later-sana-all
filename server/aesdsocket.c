@@ -12,14 +12,67 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdbool.h>
+#include "queue.h"
 
 
 #define PORT "9000"
 #define BUFFER_SIZE 1024
 #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
 
-
 bool sig_quit = false;
+
+struct thread_data {
+    pthread_mutex_t *mutex;
+    int newsockfd;
+    int data_fd;
+    int wait_to_obtain_ms;
+    int wait_to_release_ms;
+    bool thread_complete_success;
+};
+
+void *handle_client(void *arg){
+	struct thread_data *t_data = (struct thread_data *)arg;
+    int newsockfd = t_data->newsockfd;
+    int data_fd = t_data->data_fd;
+    char buffer[BUFFER_SIZE];
+    bzero(buffer, BUFFER_SIZE);
+    ssize_t bytes_received;
+
+    while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
+        buffer[bytes_received] = '\0';
+
+        // Lock the mutex before writing to the file
+        pthread_mutex_lock(t_data->mutex);
+        if (write(data_fd, buffer, bytes_received) < 0) {
+            syslog(LOG_ERR, "handle_client, write function error...");
+            pthread_mutex_unlock(t_data->mutex);
+            break;
+        }
+        pthread_mutex_unlock(t_data->mutex);
+
+        // Check if the last character is a newline
+        if (buffer[bytes_received - 1] == '\n') {
+            lseek(data_fd, 0, SEEK_SET);
+            char read_buffer[BUFFER_SIZE];
+            ssize_t read_bytes;
+
+            // Read the entire content of the file and send it to the client
+            while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
+                send(newsockfd, read_buffer, read_bytes, 0);
+            }
+            lseek(data_fd, 0, SEEK_END);
+        }
+    }
+
+
+    if (bytes_received < 0) {
+        syslog(LOG_ERR, "error sending data to client...");
+    }
+
+	return NULL;
+}
+
+
 
 
 void error(const char *msg)
@@ -120,6 +173,7 @@ int main(int argc, char *argv[]) // will uncomment later
 		}
 
 
+	// sigaction part
 	struct sigaction new_action;
     memset(&new_action, 0, sizeof(new_action) );
     new_action.sa_handler = signal_handler;
@@ -129,6 +183,9 @@ int main(int argc, char *argv[]) // will uncomment later
     	error("sigaction failed...");
     }
 
+    // sigaction part
+    pthread_mutex_t mutex;
+    pthread_mutex_init(&mutex, NULL);
 
     while( sig_quit == false )
     {
@@ -175,65 +232,86 @@ int main(int argc, char *argv[]) // will uncomment later
 		}
 
 
-		char buffer[BUFFER_SIZE];
-		bzero(buffer, BUFFER_SIZE);
+		// char buffer[BUFFER_SIZE];
+		// bzero(buffer, BUFFER_SIZE);
 
-		// read area
-		ssize_t bytes_received;
-		while( (bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 ){
-			buffer[bytes_received] = '\0';
+		// // read area
+		// ssize_t bytes_received;
+		// while( (bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 ){
+		// 	buffer[bytes_received] = '\0';
 
-			if( (write(data_fd, buffer, bytes_received)) < 0 )
-			{
-				syslog(LOG_ERR,"send_data_to_client, write function error...");
-				break;
-			}
+		// 	if( (write(data_fd, buffer, bytes_received)) < 0 )
+		// 	{
+		// 		syslog(LOG_ERR,"send_data_to_client, write function error...");
+		// 		break;
+		// 	}
 
-			// Check if the last character is a newline
-	        if (buffer[bytes_received - 1] == '\n') {
-	            // Move the file pointer to the beginning
-	            lseek(data_fd, 0, SEEK_SET);
+		// 	// Check if the last character is a newline
+	 //        if (buffer[bytes_received - 1] == '\n') {
+	 //            // Move the file pointer to the beginning
+	 //            lseek(data_fd, 0, SEEK_SET);
 	            
-	            char read_buffer[BUFFER_SIZE];
-	            ssize_t read_bytes;
+	 //            char read_buffer[BUFFER_SIZE];
+	 //            ssize_t read_bytes;
 
-	            // Read the entire content of the file and send it to the client
-	            while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
-	                send(newsockfd, read_buffer, read_bytes, 0);
-	            }
+	 //            // Read the entire content of the file and send it to the client
+	 //            while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
+	 //                send(newsockfd, read_buffer, read_bytes, 0);
+	 //            }
 
-	            // Move the file pointer back to the end
-	            lseek(data_fd, 0, SEEK_END);
-	        }
-		}
-
-
-
-		if (bytes_received < 0) {
-        	syslog(LOG_ERR, "error send data to client...");
-    	}
+	 //            // Move the file pointer back to the end
+	 //            lseek(data_fd, 0, SEEK_END);
+	 //        }
+		// }
 
 
 
-		if( (close(data_fd)) < 0)
-		{
-			syslog(LOG_ERR, "send_data_to_client, close function error...");
-		}
 
-		close(newsockfd);
-		close(data_fd);
+
+		// if (bytes_received < 0) {
+  //       	syslog(LOG_ERR, "error send data to client...");
+  //   	}
+
+
+
+		// if( (close(data_fd)) < 0)
+		// {
+		// 	syslog(LOG_ERR, "send_data_to_client, close function error...");
+		// }
+
+		// close(newsockfd);
+		// close(data_fd);
+
+		struct thread_data *t_data = malloc(sizeof(struct thread_data));
+		t_data->mutex = &mutex;
+		t_data->newsockfd = newsockfd;
+		t_data->data_fd = data_fd;
+        t_data->wait_to_obtain_ms = 100; // Example wait time
+        t_data->wait_to_release_ms = 100; // Example wait time
+        t_data->thread_complete_success = false;
+
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
+            syslog(LOG_ERR, "pthread_create error...");
+            close(newsockfd);
+            close(data_fd);
+            free(t_data);
+        } else {
+            pthread_detach(thread_id); // Detach the thread for automatic cleanup
+        }
 
     }
 
 
 
 
-    // cleanup();
-    if (remove("/var/tmp/aesdsocketdata") == 0) {
-    	printf("File deleted successfully.\n");
-	} else {
-	    perror("Error deleting file");
-	}
+ //    // cleanup();
+ //    if (remove("/var/tmp/aesdsocketdata") == 0) {
+ //    	printf("File deleted successfully.\n");
+	// } else {
+	//     perror("Error deleting file");
+	// }
+	pthread_mutex_destroy(&mutex);
     close(sockfd);
     return 0;
 
