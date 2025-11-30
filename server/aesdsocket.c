@@ -50,7 +50,7 @@ void *handle_client(void *arg){
 	{
 		error("send_data_to_client, open function error...");
 		close(data_fd);
-		continue;
+		// continue;
 	}
 
     while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
