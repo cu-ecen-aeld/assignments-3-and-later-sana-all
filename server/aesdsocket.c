@@ -49,7 +49,7 @@ void *handle_client(void *arg){
             pthread_mutex_unlock(t_data->mutex);
             break;
         }
-        pthread_mutex_unlock(t_data->mutex);
+        // pthread_mutex_unlock(t_data->mutex);
 
         // Check if the last character is a newline
         if (buffer[bytes_received - 1] == '\n') {
@@ -63,6 +63,7 @@ void *handle_client(void *arg){
             }
             lseek(data_fd, 0, SEEK_END);
         }
+        pthread_mutex_unlock(t_data->mutex);
     }
 
 
