@@ -25,7 +25,7 @@ bool sig_quit = false;
 struct thread_data {
     pthread_mutex_t *mutex;
     int newsockfd;
-    int data_fd;
+    // int data_fd;
     int wait_to_obtain_ms;
     int wait_to_release_ms;
     bool thread_complete_success;
@@ -34,10 +34,18 @@ struct thread_data {
 void *handle_client(void *arg){
 	struct thread_data *t_data = (struct thread_data *)arg;
     int newsockfd = t_data->newsockfd;
-    int data_fd = t_data->data_fd;
+    // int data_fd = t_data->data_fd;
     char buffer[BUFFER_SIZE];
     bzero(buffer, BUFFER_SIZE);
     ssize_t bytes_received;
+
+	int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+	if(data_fd < 0)
+	{
+		error("send_data_to_client, open function error...");
+		close(data_fd);
+		continue;
+	}
 
     while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
         buffer[bytes_received] = '\0';
@@ -76,6 +84,7 @@ void *handle_client(void *arg){
 	    perror("Error deleting file");
 	}
 
+	close(data_fd);
 	close(newsockfd);
     free(t_data);
 
@@ -233,13 +242,13 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 		// step i dont know
-		int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
-		if(data_fd < 0)
-		{
-			error("send_data_to_client, open function error...");
-			close(newsockfd);
-			continue;
-		}
+		// int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+		// if(data_fd < 0)
+		// {
+		// 	error("send_data_to_client, open function error...");
+		// 	close(newsockfd);
+		// 	continue;
+		// }
 
 
 		// char buffer[BUFFER_SIZE];
@@ -295,7 +304,7 @@ int main(int argc, char *argv[]) // will uncomment later
 		struct thread_data *t_data = malloc(sizeof(struct thread_data));
 		t_data->mutex = &mutex;
 		t_data->newsockfd = newsockfd;
-		t_data->data_fd = data_fd;
+		// t_data->data_fd = data_fd;
         t_data->wait_to_obtain_ms = 100; // Example wait time
         t_data->wait_to_release_ms = 100; // Example wait time
         t_data->thread_complete_success = false;
@@ -304,7 +313,7 @@ int main(int argc, char *argv[]) // will uncomment later
         if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
             syslog(LOG_ERR, "pthread_create error...");
             close(newsockfd);
-            close(data_fd);
+            // close(data_fd);
             free(t_data);
         } else {
             pthread_detach(thread_id); // Detach the thread for automatic cleanup
@@ -322,7 +331,7 @@ int main(int argc, char *argv[]) // will uncomment later
 	//     perror("Error deleting file");
 	// }
 	pthread_mutex_destroy(&mutex);
-    // close(sockfd);
+    close(sockfd);
     return 0;
 }
 
