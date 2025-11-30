@@ -22,6 +22,12 @@
 
 bool sig_quit = false;
 
+void error(const char *msg)
+{
+	perror(msg);
+	exit(EXIT_FAILURE);
+}
+
 struct thread_data {
     pthread_mutex_t *mutex;
     int newsockfd;
@@ -93,12 +99,6 @@ void *handle_client(void *arg){
 
 
 
-
-void error(const char *msg)
-{
-	perror(msg);
-	exit(EXIT_FAILURE);
-}
 
 void signal_handler()
 {
