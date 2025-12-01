@@ -85,11 +85,11 @@ void *handle_client(void *arg){
         syslog(LOG_ERR, "error sending data to client...");
     }
 
-    if (remove("/var/tmp/aesdsocketdata") == 0) {
-    	printf("File deleted successfully.\n");
-	} else {
-	    perror("Error deleting file");
-	}
+ //    if (remove("/var/tmp/aesdsocketdata") == 0) {
+ //    	printf("File deleted successfully.\n");
+	// } else {
+	//     perror("Error deleting file");
+	// }
 
 	close(data_fd);
 	close(newsockfd);
@@ -325,12 +325,12 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
- //    // cleanup();
- //    if (remove("/var/tmp/aesdsocketdata") == 0) {
- //    	printf("File deleted successfully.\n");
-	// } else {
-	//     perror("Error deleting file");
-	// }
+    // cleanup();
+    if (remove("/var/tmp/aesdsocketdata") == 0) {
+    	printf("File deleted successfully.\n");
+	} else {
+	    perror("Error deleting file");
+	}
 	pthread_mutex_destroy(&mutex);
     close(sockfd);
     return 0;
