@@ -50,6 +50,7 @@ void *handle_client(void *arg){
 	{
 		error("send_data_to_client, open function error...");
 		close(data_fd);
+		return NULL;
 		// continue;
 	}
 
