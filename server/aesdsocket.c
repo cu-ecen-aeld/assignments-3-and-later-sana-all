@@ -40,10 +40,12 @@ struct thread_data {
 
 
 void *timestamp_thread(void *arg){
+	struct thread_data *t_data = (struct thread_data *)arg;
+	
 	while(sig_quit == false)
 	{
 
-		struct thread_data *t_data = (struct thread_data *)arg;
+		// struct thread_data *t_data = (struct thread_data *)arg;
 	    // int newsockfd = t_data->newsockfd;
 	    int data_fd = t_data->data_fd;
 	    char buffer[BUFFER_SIZE];
