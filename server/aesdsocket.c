@@ -44,18 +44,20 @@ void *timestamp_thread(void *arg){
 	{
 
 		struct thread_data *t_data = (struct thread_data *)arg;
-	    int newsockfd = t_data->newsockfd;
+	    // int newsockfd = t_data->newsockfd;
 	    int data_fd = t_data->data_fd;
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
 	    ssize_t bytes_received;
+	    struct tm *t_ptr;
+    	time_t t;
 
 
 	    
 	    sleep(10);
 	    t = time(NULL);
 	    t_ptr = localtime(&t);
-	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", ptr);
+	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
 
 		pthread_mutex_lock(t_data->mutex);
 		if (write(data_fd, buffer, bytes_received) < 0) {
@@ -69,8 +71,9 @@ void *timestamp_thread(void *arg){
 
  
 
-    close(newsockfd);
+    // close(newsockfd);
     free(t_data);
+    return NULL;
 }
 
 
