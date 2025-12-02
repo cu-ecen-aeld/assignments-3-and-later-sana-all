@@ -41,7 +41,7 @@ struct thread_data {
 
 void *timestamp_thread(void *arg){
 	struct thread_data *t_data = (struct thread_data *)arg;
-	
+
 	while(sig_quit == false)
 	{
 
@@ -60,6 +60,8 @@ void *timestamp_thread(void *arg){
 	    t = time(NULL);
 	    t_ptr = localtime(&t);
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
+
+	    bytes_received = strlen(buffer);
 
 		pthread_mutex_lock(t_data->mutex);
 		if (write(data_fd, buffer, bytes_received) < 0) {
