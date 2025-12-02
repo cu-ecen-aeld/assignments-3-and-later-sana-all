@@ -40,6 +40,7 @@ struct thread_data {
 
 
 void *timestamp_thread(void *arg){
+	printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
 	struct thread_data *t_data = (struct thread_data *)arg;
 
 	while(sig_quit == false)
@@ -82,6 +83,7 @@ void *timestamp_thread(void *arg){
 
 
 void *handle_client(void *arg){
+	printf("OLOOOOOOOOOOOOL 000 handle_client\n");
 	struct thread_data *t_data = (struct thread_data *)arg;
     int newsockfd = t_data->newsockfd;
     int data_fd = t_data->data_fd;
@@ -238,7 +240,7 @@ int main(int argc, char *argv[]) // will uncomment later
 			continue;
 		}
 
-		printf("OLOOOOOOOOOOOOL 222 \n");
+		printf("OLOOOOOOOOOOOOL 000 \n");
 
 		bool is_ipv4 = (cli_addr.ss_family == AF_INET);
 		char client_ip[INET6_ADDRSTRLEN]; // for ipv4 client_ip[INET_ADDRSTRLEN];
