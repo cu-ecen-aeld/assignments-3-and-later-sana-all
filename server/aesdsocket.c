@@ -39,7 +39,7 @@ struct thread_data {
 void *timestamp_thread(void *arg){
 	// printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
 	struct thread_data *t_data = (struct thread_data *)arg;
-	int newsockfd = t_data->newsockfd;
+	// int newsockfd = t_data->newsockfd;
 	int data_fd = t_data->data_fd;
 
 	while(sig_quit == false)
