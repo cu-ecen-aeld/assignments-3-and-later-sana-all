@@ -37,10 +37,10 @@ struct thread_data {
 };
 
 void *timestamp_thread(void *arg){
-	printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
+	// printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
 	struct thread_data *t_data = (struct thread_data *)arg;
 
-	while(sig_quit == false)
+	while(true)
 	{
 
 		// struct thread_data *t_data = (struct thread_data *)arg;
@@ -60,8 +60,8 @@ void *timestamp_thread(void *arg){
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
 
 	    bytes_received = strlen(buffer);
-	    printf("OLOOOOOOOOOOOOL timestamp_thread\n");
-	    puts(buffer);
+	    // printf("OLOOOOOOOOOOOOL timestamp_thread\n");
+	    // puts(buffer);
 		pthread_mutex_lock(t_data->mutex);
 		if (write(data_fd, buffer, bytes_received) < 0) {
 	        syslog(LOG_ERR, "handle_client, write function error...");
