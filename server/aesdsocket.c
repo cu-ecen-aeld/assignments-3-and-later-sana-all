@@ -367,10 +367,10 @@ int main(int argc, char *argv[]) // will uncomment later
             close(data_fd);
             free(t_data);
         } else {
-        	// pthread_detach(thread_timestamp_0);
-        	pthread_join(thread_timestamp_0, NULL);
+        	pthread_detach(thread_timestamp_0);
+        	// pthread_join(thread_timestamp_0, NULL);
         	// continue;
-        	break;
+        	// break;
         }
 
 
@@ -384,10 +384,10 @@ int main(int argc, char *argv[]) // will uncomment later
             // close(data_fd);
             free(t_data);
         } else {
-            // pthread_detach(thread_id); // Detach the thread for automatic cleanup
-            pthread_join(thread_id, NULL);
+            pthread_detach(thread_id); // Detach the thread for automatic cleanup
+            // pthread_join(thread_id, NULL);
             // continue;
-            break;
+            // break;
         }
 
     }
