@@ -42,6 +42,7 @@ void *timestamp_thread(void *arg){
 
 	while(sig_quit == false)
 	{
+		sleep(10);
 
 		// struct thread_data *t_data = (struct thread_data *)arg;
 	    int newsockfd = t_data->newsockfd;
@@ -54,14 +55,14 @@ void *timestamp_thread(void *arg){
 
 
 	    
-	    sleep(10);
+	    // sleep(10);
 	    t = time(NULL);
 	    t_ptr = localtime(&t);
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T\n", t_ptr);
 
 	    bytes_received = strlen(buffer);
-	    // printf("OLOOOOOOOOOOOOL timestamp_thread\n");
-	    // puts(buffer);
+	    printf("OLOOOOOOOOOOOOL timestamp_thread\n");
+	    puts(buffer);
 		pthread_mutex_lock(t_data->mutex);
 		if (write(data_fd, buffer, bytes_received) < 0) {
 	        syslog(LOG_ERR, "handle_client, write function error...");
@@ -111,9 +112,9 @@ void *timestamp_thread(void *arg){
 
 
 
-	     
-		close(data_fd);
-	    close(newsockfd);
+
+		// close(data_fd);
+	 //    close(newsockfd);
 	    free(t_data);
 
 
