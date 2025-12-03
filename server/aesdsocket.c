@@ -40,7 +40,7 @@ void *timestamp_thread(void *arg){
 	// printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
 	struct thread_data *t_data = (struct thread_data *)arg;
 
-	while(true)
+	while(sig_quit == false)
 	{
 
 		// struct thread_data *t_data = (struct thread_data *)arg;
@@ -54,7 +54,7 @@ void *timestamp_thread(void *arg){
 
 
 	    
-	    sleep(10);
+	    sleep(1);
 	    t = time(NULL);
 	    t_ptr = localtime(&t);
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
