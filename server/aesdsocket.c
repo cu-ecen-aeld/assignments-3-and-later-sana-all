@@ -54,7 +54,7 @@ void *timestamp_thread(void *arg){
 
 
 	    
-	    sleep(1);
+	    sleep(9);
 	    t = time(NULL);
 	    t_ptr = localtime(&t);
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T\n", t_ptr);
