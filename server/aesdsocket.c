@@ -60,7 +60,7 @@ void *timestamp_thread(void *arg){
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
 
 	    bytes_received = strlen(buffer);
-
+	    puts(buffer);
 		pthread_mutex_lock(t_data->mutex);
 		if (write(data_fd, buffer, bytes_received) < 0) {
 	        syslog(LOG_ERR, "handle_client, write function error...");
