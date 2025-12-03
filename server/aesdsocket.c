@@ -115,7 +115,7 @@ void *timestamp_thread(void *arg){
 
 		// close(data_fd);
 	 //    close(newsockfd);
-	    free(t_data);
+	    // free(t_data);
 
 
 
@@ -125,7 +125,7 @@ void *timestamp_thread(void *arg){
  
 	// close(data_fd);
  //    close(newsockfd);
- //    free(t_data);
+    free(t_data);
     return NULL;
 }
 
