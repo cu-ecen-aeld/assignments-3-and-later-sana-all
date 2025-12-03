@@ -60,6 +60,7 @@ void *timestamp_thread(void *arg){
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
 
 	    bytes_received = strlen(buffer);
+	    printf("OLOOOOOOOOOOOOL timestamp_thread\n");
 	    puts(buffer);
 		pthread_mutex_lock(t_data->mutex);
 		if (write(data_fd, buffer, bytes_received) < 0) {
