@@ -233,6 +233,15 @@ int main(int argc, char *argv[]) // will uncomment later
 
 		syslog(LOG_INFO,  "Accepted connection from %s", client_ip);
 
+		int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+		if(data_fd < 0)
+		{
+			error("send_data_to_client, open function error...");
+			close(data_fd);
+			// return NULL;
+			continue;
+		}
+
 
 
 		struct thread_data *t_data = malloc(sizeof(struct thread_data));
