@@ -369,7 +369,7 @@ int main(int argc, char *argv[]) // will uncomment later
         } else {
         	// pthread_detach(thread_timestamp_0);
         	// pthread_join(thread_timestamp_0, NULL);
-        	break;
+        	continue;
         }
 
 
@@ -385,7 +385,7 @@ int main(int argc, char *argv[]) // will uncomment later
         } else {
             // pthread_detach(thread_id); // Detach the thread for automatic cleanup
             // pthread_join(thread_id, NULL);
-            break;
+            continue;
         }
 
     }
