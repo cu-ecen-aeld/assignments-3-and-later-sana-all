@@ -368,8 +368,9 @@ int main(int argc, char *argv[]) // will uncomment later
             free(t_data);
         } else {
         	// pthread_detach(thread_timestamp_0);
-        	// pthread_join(thread_timestamp_0, NULL);
-        	continue;
+        	pthread_join(thread_timestamp_0, NULL);
+        	// continue;
+        	break;
         }
 
 
@@ -384,8 +385,9 @@ int main(int argc, char *argv[]) // will uncomment later
             free(t_data);
         } else {
             // pthread_detach(thread_id); // Detach the thread for automatic cleanup
-            // pthread_join(thread_id, NULL);
-            continue;
+            pthread_join(thread_id, NULL);
+            // continue;
+            break;
         }
 
     }
