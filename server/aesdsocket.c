@@ -188,7 +188,7 @@ void *handle_client(void *arg){
     }
 
 
-	// close(data_fd);
+	close(data_fd);
 	// close(newsockfd);
     // free(t_data);
 
@@ -384,15 +384,18 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
+    pthread_join(thread_id, NULL);
+    pthread_join(thread_timestamp_0, NULL);
+
 
 
 
     // cleanup();
- //    if (remove("/var/tmp/aesdsocketdata") == 0) {
- //    	printf("File deleted successfully.\n");
-	// } else {
-	//     perror("Error deleting file");
-	// }
+    if (remove("/var/tmp/aesdsocketdata") == 0) {
+    	printf("File deleted successfully.\n");
+	} else {
+	    perror("Error deleting file");
+	}
 	pthread_mutex_destroy(&mutex);
     close(sockfd);
     return 0;
