@@ -303,6 +303,8 @@ int main(int argc, char *argv[]) // will uncomment later
     // sigaction part
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
+    pthread_t thread_timestamp_0;
+    pthread_t thread_id;
 
     while( sig_quit == false )
     {
@@ -358,7 +360,7 @@ int main(int argc, char *argv[]) // will uncomment later
         t_data->thread_complete_success = false;
 
 
-        pthread_t thread_timestamp_0;
+        // pthread_t thread_timestamp_0;
         if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, t_data) != 0 ){
         	syslog(LOG_ERR, "thread_timestamp...");
             close(newsockfd);
@@ -372,7 +374,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-        pthread_t thread_id;
+        // pthread_t thread_id;
         if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
             syslog(LOG_ERR, "pthread_create error...");
             close(newsockfd);
