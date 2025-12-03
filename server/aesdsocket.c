@@ -188,8 +188,8 @@ void *handle_client(void *arg){
     }
 
 
-	// close(data_fd);
-	close(newsockfd);
+	close(data_fd);
+	// close(newsockfd);
     free(t_data);
 
 	return NULL;
