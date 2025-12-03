@@ -44,7 +44,7 @@ void *timestamp_thread(void *arg){
 
 	while(sig_quit == false)
 	{
-		sleep(20);
+		sleep(10);
 
 		// struct thread_data *t_data = (struct thread_data *)arg;
 	    // int newsockfd = t_data->newsockfd;
@@ -353,6 +353,18 @@ int main(int argc, char *argv[]) // will uncomment later
         t_data->thread_complete_success = false;
 
 
+
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
+            syslog(LOG_ERR, "pthread_create error...");
+            close(newsockfd);
+            // close(data_fd);
+            free(t_data);
+        } else {
+            pthread_detach(thread_id); // Detach the thread for automatic cleanup
+        }
+
+
         pthread_t thread_timestamp_0;
         if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, t_data) != 0 ){
         	syslog(LOG_ERR, "thread_timestamp...");
@@ -367,15 +379,15 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-        pthread_t thread_id;
-        if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
-            syslog(LOG_ERR, "pthread_create error...");
-            close(newsockfd);
-            // close(data_fd);
-            free(t_data);
-        } else {
-            pthread_detach(thread_id); // Detach the thread for automatic cleanup
-        }
+        // pthread_t thread_id;
+        // if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
+        //     syslog(LOG_ERR, "pthread_create error...");
+        //     close(newsockfd);
+        //     // close(data_fd);
+        //     free(t_data);
+        // } else {
+        //     pthread_detach(thread_id); // Detach the thread for automatic cleanup
+        // }
 
     }
 
