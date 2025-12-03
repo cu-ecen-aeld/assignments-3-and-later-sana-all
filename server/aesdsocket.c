@@ -44,7 +44,7 @@ void *timestamp_thread(void *arg){
 
 	while(sig_quit == false)
 	{
-		sleep(10);
+		sleep(20);
 
 		// struct thread_data *t_data = (struct thread_data *)arg;
 	    // int newsockfd = t_data->newsockfd;
