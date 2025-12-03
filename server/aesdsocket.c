@@ -35,6 +35,48 @@ struct thread_data {
     bool thread_complete_success;
 };
 
+void *timestamp_thread(void *arg){
+	printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
+	struct thread_data *t_data = (struct thread_data *)arg;
+
+	while(sig_quit == false)
+	{
+
+		// struct thread_data *t_data = (struct thread_data *)arg;
+	    // int newsockfd = t_data->newsockfd;
+	    int data_fd = t_data->data_fd;
+	    char buffer[BUFFER_SIZE];
+	    bzero(buffer, BUFFER_SIZE);
+	    ssize_t bytes_received;
+	    struct tm *t_ptr;
+    	time_t t;
+
+
+	    
+	    sleep(10);
+	    t = time(NULL);
+	    t_ptr = localtime(&t);
+	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
+
+	    bytes_received = strlen(buffer);
+
+		pthread_mutex_lock(t_data->mutex);
+		if (write(data_fd, buffer, bytes_received) < 0) {
+	        syslog(LOG_ERR, "handle_client, write function error...");
+	        pthread_mutex_unlock(t_data->mutex);
+	        break;
+	    }
+	    pthread_mutex_unlock(t_data->mutex);
+	}
+	
+
+ 
+
+    // close(newsockfd);
+    free(t_data);
+    return NULL;
+}
+
 void *handle_client(void *arg){
 	struct thread_data *t_data = (struct thread_data *)arg;
     int newsockfd = t_data->newsockfd;
@@ -233,6 +275,9 @@ int main(int argc, char *argv[]) // will uncomment later
 
 		syslog(LOG_INFO,  "Accepted connection from %s", client_ip);
 
+
+		// open data
+
 		int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if(data_fd < 0)
 		{
@@ -249,6 +294,21 @@ int main(int argc, char *argv[]) // will uncomment later
 		t_data->newsockfd = newsockfd;
 		t_data->data_fd = data_fd;
         t_data->thread_complete_success = false;
+
+
+        pthread_t thread_timestamp_0;
+        if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, t_data) != 0 ){
+        	syslog(LOG_ERR, "thread_timestamp...");
+            close(newsockfd);
+            close(data_fd);
+            free(t_data);
+        } else {
+        	pthread_detach(thread_timestamp_0);
+        }
+
+
+
+
 
         pthread_t thread_id;
         if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
