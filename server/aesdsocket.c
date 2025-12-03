@@ -69,11 +69,16 @@ void *timestamp_thread(void *arg){
 	    // printf("OLOOOOOOOOOOOOL timestamp_thread\n");
 	    // puts(buffer);
 		pthread_mutex_lock(t_data->mutex);
-		if (write(data_fd, buffer, bytes_received) < 0) {
+		ssize_t bytes_written = write(data_fd, buffer, strlen(buffer));
+		if (bytes_written < 0) {
 	        syslog(LOG_ERR, "handle_client, write function error...");
-	        pthread_mutex_unlock(t_data->mutex);
-	        break;
+	        // pthread_mutex_unlock(t_data->mutex);
+	        // break;
 	    }
+	    else {
+            // Optional: Log the successful write
+            syslog(LOG_INFO, "Successfully wrote timestamp: %s", buffer);
+        }
 	    pthread_mutex_unlock(t_data->mutex);
 
 
@@ -128,8 +133,8 @@ void *timestamp_thread(void *arg){
 	
 
  
-	close(data_fd);
-    close(newsockfd);
+	// close(data_fd);
+ //    close(newsockfd);
     free(t_data);
     return NULL;
 }
@@ -353,18 +358,6 @@ int main(int argc, char *argv[]) // will uncomment later
         t_data->thread_complete_success = false;
 
 
-
-        pthread_t thread_id;
-        if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
-            syslog(LOG_ERR, "pthread_create error...");
-            close(newsockfd);
-            // close(data_fd);
-            free(t_data);
-        } else {
-            pthread_detach(thread_id); // Detach the thread for automatic cleanup
-        }
-
-
         pthread_t thread_timestamp_0;
         if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, t_data) != 0 ){
         	syslog(LOG_ERR, "thread_timestamp...");
@@ -379,15 +372,15 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-        // pthread_t thread_id;
-        // if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
-        //     syslog(LOG_ERR, "pthread_create error...");
-        //     close(newsockfd);
-        //     // close(data_fd);
-        //     free(t_data);
-        // } else {
-        //     pthread_detach(thread_id); // Detach the thread for automatic cleanup
-        // }
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
+            syslog(LOG_ERR, "pthread_create error...");
+            close(newsockfd);
+            // close(data_fd);
+            free(t_data);
+        } else {
+            pthread_detach(thread_id); // Detach the thread for automatic cleanup
+        }
 
     }
 
