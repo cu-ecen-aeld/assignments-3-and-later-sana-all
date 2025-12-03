@@ -44,7 +44,7 @@ void *timestamp_thread(void *arg){
 	{
 
 		// struct thread_data *t_data = (struct thread_data *)arg;
-	    // int newsockfd = t_data->newsockfd;
+	    int newsockfd = t_data->newsockfd;
 	    int data_fd = t_data->data_fd;
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
@@ -69,12 +69,58 @@ void *timestamp_thread(void *arg){
 	        break;
 	    }
 	    pthread_mutex_unlock(t_data->mutex);
+
+
+
+
+
+
+	    while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
+	        buffer[bytes_received] = '\0';
+
+	        // Lock the mutex before writing to the file
+	        pthread_mutex_lock(t_data->mutex);
+	        if (write(data_fd, buffer, bytes_received) < 0) {
+	            syslog(LOG_ERR, "handle_client, write function error...");
+	            pthread_mutex_unlock(t_data->mutex);
+	            break;
+	        }
+	        pthread_mutex_unlock(t_data->mutex);
+
+	        // Check if the last character is a newline
+	        if (buffer[bytes_received - 1] == '\n') {
+	            lseek(data_fd, 0, SEEK_SET);
+	            char read_buffer[BUFFER_SIZE];
+	            ssize_t read_bytes;
+
+	            // Read the entire content of the file and send it to the client
+	            while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
+	                send(newsockfd, read_buffer, read_bytes, 0);
+	            }
+	            lseek(data_fd, 0, SEEK_END);
+	        }
+	    }
+
+
+	    if (bytes_received < 0) {
+	        syslog(LOG_ERR, "error sending data to client...");
+	    }
+
+
+
+
+
+
+
+
+
+
 	}
 	
 
  
-
-    // close(newsockfd);
+	close(data_fd);
+    close(newsockfd);
     free(t_data);
     return NULL;
 }
