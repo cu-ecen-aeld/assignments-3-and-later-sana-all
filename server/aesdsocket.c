@@ -317,7 +317,7 @@ int main(int argc, char *argv[]) // will uncomment later
 			continue;
 		}
 
-		printf("OLOOOOOOOOOOOOL 222 \n");
+		// printf("OLOOOOOOOOOOOOL 222 \n");
 
 		bool is_ipv4 = (cli_addr.ss_family == AF_INET);
 		char client_ip[INET6_ADDRSTRLEN]; // for ipv4 client_ip[INET_ADDRSTRLEN];
@@ -388,11 +388,11 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
     // cleanup();
-    if (remove("/var/tmp/aesdsocketdata") == 0) {
-    	printf("File deleted successfully.\n");
-	} else {
-	    perror("Error deleting file");
-	}
+ //    if (remove("/var/tmp/aesdsocketdata") == 0) {
+ //    	printf("File deleted successfully.\n");
+	// } else {
+	//     perror("Error deleting file");
+	// }
 	pthread_mutex_destroy(&mutex);
     close(sockfd);
     return 0;
