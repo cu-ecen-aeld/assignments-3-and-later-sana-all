@@ -54,10 +54,10 @@ void *timestamp_thread(void *arg){
 
 
 	    
-	    sleep(2);
+	    sleep(10);
 	    t = time(NULL);
 	    t_ptr = localtime(&t);
-	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T", t_ptr);
+	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T\n", t_ptr);
 
 	    bytes_received = strlen(buffer);
 	    // printf("OLOOOOOOOOOOOOL timestamp_thread\n");
