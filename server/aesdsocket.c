@@ -39,6 +39,7 @@ struct thread_data {
 void *timestamp_thread(void *arg){
 	// printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
 	struct thread_data *t_data = (struct thread_data *)arg;
+	int newsockfd = t_data->newsockfd;
 	int data_fd = t_data->data_fd;
 
 	while(sig_quit == false)
@@ -46,7 +47,7 @@ void *timestamp_thread(void *arg){
 		sleep(10);
 
 		// struct thread_data *t_data = (struct thread_data *)arg;
-	    int newsockfd = t_data->newsockfd;
+	    // int newsockfd = t_data->newsockfd;
 	    // int data_fd = t_data->data_fd;
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
@@ -125,7 +126,7 @@ void *timestamp_thread(void *arg){
 
  
 	close(data_fd);
- //    close(newsockfd);
+    close(newsockfd);
     free(t_data);
     return NULL;
 }
