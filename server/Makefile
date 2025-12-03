@@ -14,6 +14,7 @@ default: aesdsocket
 
 aesdsocket: aesdsocket.c
 	$(CC) $(CFLAGS) aesdsocket.c -o $(TARGET) $(LDFLAGS)
+	chmod 755 $(TARGET)  # Set permissions to 755
 
 #clean target
 clean:
