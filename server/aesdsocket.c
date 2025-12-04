@@ -14,8 +14,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <time.h>
-// #include "queue.h"
-
+#include "queue.h"
 
 #define PORT "9000"
 #define BUFFER_SIZE 1024
@@ -37,18 +36,13 @@ struct thread_data {
 };
 
 void *timestamp_thread(void *arg){
-	// printf("OLOOOOOOOOOOOOL  timestamp_thread\n");
 	struct thread_data *t_data = (struct thread_data *)arg;
-	// int newsockfd = t_data->newsockfd;
 	int data_fd = t_data->data_fd;
 
 	while(sig_quit == false)
 	{
 		sleep(10);
 
-		// struct thread_data *t_data = (struct thread_data *)arg;
-	    // int newsockfd = t_data->newsockfd;
-	    // int data_fd = t_data->data_fd;
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
 	    ssize_t bytes_received;
@@ -63,11 +57,6 @@ void *timestamp_thread(void *arg){
 	   	bytes_received = strlen(buffer);
 	    buffer[bytes_received] = '\0';
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T\n", t_ptr);
-
-	    // bytes_received = strlen(buffer);
-	    // buffer[bytes_received] = '\0';
-	    // printf("OLOOOOOOOOOOOOL timestamp_thread\n");
-	    // puts(buffer);
 		pthread_mutex_lock(t_data->mutex);
 		ssize_t bytes_written = write(data_fd, buffer, strlen(buffer));
 		if (bytes_written < 0) {
@@ -84,57 +73,10 @@ void *timestamp_thread(void *arg){
 
 
 
-
-
-	    // while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
-	    //     buffer[bytes_received] = '\0';
-
-	    //     // Lock the mutex before writing to the file
-	    //     pthread_mutex_lock(t_data->mutex);
-	    //     if (write(data_fd, buffer, bytes_received) < 0) {
-	    //         syslog(LOG_ERR, "handle_client, write function error...");
-	    //         pthread_mutex_unlock(t_data->mutex);
-	    //         break;
-	    //     }
-	    //     pthread_mutex_unlock(t_data->mutex);
-
-	    //     // Check if the last character is a newline
-	    //     if (buffer[bytes_received - 1] == '\n') {
-	    //         lseek(data_fd, 0, SEEK_SET);
-	    //         char read_buffer[BUFFER_SIZE];
-	    //         ssize_t read_bytes;
-
-	    //         // Read the entire content of the file and send it to the client
-	    //         while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
-	    //             send(newsockfd, read_buffer, read_bytes, 0);
-	    //         }
-	    //         lseek(data_fd, 0, SEEK_END);
-	    //     }
-	    // }
-
-
-	    // if (bytes_received < 0) {
-	    //     syslog(LOG_ERR, "error sending data to client...");
-	    // }
-
-
-
-
-
-
-
-		// close(data_fd);
-	 //    close(newsockfd);
-	    // free(t_data);
-
-
-
 	}
 	
 
  
-	// close(data_fd);
- //    close(newsockfd);
     free(t_data);
     return NULL;
 }
@@ -147,14 +89,6 @@ void *handle_client(void *arg){
     bzero(buffer, BUFFER_SIZE);
     ssize_t bytes_received;
 
-	// int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
-	// if(data_fd < 0)
-	// {
-	// 	error("send_data_to_client, open function error...");
-	// 	close(data_fd);
-	// 	return NULL;
-	// 	// continue;
-	// }
 
     while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
         buffer[bytes_received] = '\0';
@@ -187,10 +121,6 @@ void *handle_client(void *arg){
         syslog(LOG_ERR, "error sending data to client...");
     }
 
-
-	// close(data_fd);
-	// close(newsockfd);
-    // free(t_data);
 
 	return NULL;
 }
