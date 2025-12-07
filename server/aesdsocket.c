@@ -327,20 +327,20 @@ int main(int argc, char *argv[]) // will uncomment later
         // new_conn->socket_fd = newsockfd;
         // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
-
-        // pthread_t thread_id;
-        if (pthread_create(&new_conn->thread_id, NULL, handle_client, new_conn) != 0) {
+        int lomi = pthread_create(&new_conn->thread_id, NULL, handle_client, new_conn);
+        SLIST_INSERT_HEAD(&head, new_conn, entries);
+        if (lomi != 0) {
             syslog(LOG_ERR, "pthread_create error...");
             close(newsockfd);
             // close(data_fd);
             free(t_data);
         } else {
-            // pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
-            pthread_join(new_conn->thread_id, NULL);
+            pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
+            // pthread_join(new_conn->thread_id, NULL);
             // continue;
             // break;
         }
-        SLIST_INSERT_HEAD(&head, new_conn, entries);
+        // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
     }
 
