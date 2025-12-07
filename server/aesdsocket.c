@@ -38,8 +38,9 @@ struct thread_data {
 };
 
 typedef struct connection_t{
-	SLIST_ENTRY(connection_t) entries; // Linked list entry
 	pthread_t thread_id;
+	SLIST_ENTRY(connection_t) entries; // Linked list entry
+	// pthread_t thread_id;
 } connection_t;
 
 SLIST_HEAD(slist_head, connection_t) head = SLIST_HEAD_INITIALIZER(head);
