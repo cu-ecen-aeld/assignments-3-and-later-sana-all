@@ -84,7 +84,7 @@ void *timestamp_thread(void *arg){
             // Optional: Log the successful write
             syslog(LOG_INFO, "Successfully wrote timestamp: %s", buffer);
         }
-	    pthread_mutex_unlock(&mtx);
+	    pthread_mutex_unlock(mtx);
 
 
 
