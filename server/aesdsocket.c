@@ -35,9 +35,14 @@ struct thread_data {
     bool thread_complete_success;
 };
 
-void *timestamp_thread(void *arg){
-	struct thread_data *t_data = (struct thread_data *)arg;
-	int data_fd = t_data->data_fd;
+typedef struct{
+	SLIST_ENTRY(connection) entries; // Linked list entry
+	int socket_fd;
+} connection_t;
+
+SLIST_HEAD(slist_head, connection_t) head;
+
+void *timestamp_thread(){
 
 	while(sig_quit == false)
 	{
@@ -46,12 +51,19 @@ void *timestamp_thread(void *arg){
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
 	    ssize_t bytes_received;
+	    int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+		if(data_fd < 0)
+		{
+			error("send_data_to_client, open function error...");
+			close(data_fd);
+			return NULL;
+			// continue;
+		}
 	    struct tm *t_ptr;
     	time_t t;
 
 
-	    
-	    // sleep(10);
+
 	    t = time(NULL);
 	    t_ptr = localtime(&t);
 	   	bytes_received = strlen(buffer);
@@ -77,7 +89,6 @@ void *timestamp_thread(void *arg){
 	
 
  
-    free(t_data);
     return NULL;
 }
 
@@ -137,7 +148,10 @@ void signal_handler()
 
 
 int main(int argc, char *argv[]) // will uncomment later
-{
+{	
+	// initialize linkedlist
+	SLIST_INIT(&head);
+
 	int daemon_mode = 0;
 	// openlog("aesdsocket", LOG_PID, LOG_USER);
 	if( argc == 2 )
@@ -229,12 +243,22 @@ int main(int argc, char *argv[]) // will uncomment later
     {
     	error("sigaction failed...");
     }
-
     // sigaction part
+
+
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
     pthread_t thread_timestamp_0;
-    pthread_t thread_id;
+
+
+        // pthread_t thread_timestamp_0;
+    if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, NULL) != 0 ){
+    	syslog(LOG_ERR, "thread_timestamp...");
+    } else {
+    	pthread_detach(thread_timestamp_0);
+    }
+
+    // pthread_t thread_id;
 
     while( sig_quit == false )
     {
@@ -290,25 +314,27 @@ int main(int argc, char *argv[]) // will uncomment later
         t_data->thread_complete_success = false;
 
 
-        // pthread_t thread_timestamp_0;
-        if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, t_data) != 0 ){
-        	syslog(LOG_ERR, "thread_timestamp...");
-            close(newsockfd);
-            close(data_fd);
-            free(t_data);
-        } else {
-        	pthread_detach(thread_timestamp_0);
-        	// pthread_join(thread_timestamp_0, NULL);
-        	// continue;
-        	// break;
-        }
+        // // pthread_t thread_timestamp_0;
+        // if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, t_data) != 0 ){
+        // 	syslog(LOG_ERR, "thread_timestamp...");
+        //     close(newsockfd);
+        //     close(data_fd);
+        //     free(t_data);
+        // } else {
+        // 	pthread_detach(thread_timestamp_0);
+        // 	// pthread_join(thread_timestamp_0, NULL);
+        // 	// continue;
+        // 	// break;
+        // }
 
 
+        connection_t *new_conn = malloc(sizeof(connection_t));
+        new_conn->socket_fd = newsockfd;
+        SLIST_INSERT_HEAD(&head, new_conn, entries);
 
 
-
-        // pthread_t thread_id;
-        if (pthread_create(&thread_id, NULL, handle_client, t_data) != 0) {
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, handle_client, new_conn) != 0) {
             syslog(LOG_ERR, "pthread_create error...");
             close(newsockfd);
             // close(data_fd);
@@ -322,7 +348,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
-    pthread_join(thread_id, NULL);
+    // pthread_join(thread_id, NULL);
     pthread_join(thread_timestamp_0, NULL);
 
 
