@@ -42,7 +42,8 @@ typedef struct{
 	pthread_t thread_id;
 } connection_t;
 
-SLIST_HEAD(slist_head, connection_t) head;
+SLIST_HEAD(slist_head, connection_t) head = SLIST_HEAD_INITIALIZER(head);
+// SLIST_HEAD(head_s, connection_t) head = SLIST_HEAD_INITIALIZER(head);
 
 void *timestamp_thread(void *arg){
 
@@ -155,7 +156,7 @@ int main(int argc, char *argv[]) // will uncomment later
 {	
 	// initialize linkedlist
 	// SLIST_INIT(&head);
-	SLIST_HEAD(head_s, connection_t) head = SLIST_HEAD_INITIALIZER(head);
+	// SLIST_HEAD(head_s, connection_t) head = SLIST_HEAD_INITIALIZER(head);
 	SLIST_INIT(&head);
 
 	int daemon_mode = 0;
