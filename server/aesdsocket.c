@@ -318,19 +318,6 @@ int main(int argc, char *argv[]) // will uncomment later
         t_data->thread_complete_success = false;
 
 
-        // // pthread_t thread_timestamp_0;
-        // if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, t_data) != 0 ){
-        // 	syslog(LOG_ERR, "thread_timestamp...");
-        //     close(newsockfd);
-        //     close(data_fd);
-        //     free(t_data);
-        // } else {
-        // 	pthread_detach(thread_timestamp_0);
-        // 	// pthread_join(thread_timestamp_0, NULL);
-        // 	// continue;
-        // 	// break;
-        // }
-
 
         connection_t *new_conn = malloc(sizeof(connection_t));
         // new_conn->socket_fd = newsockfd;
@@ -344,7 +331,7 @@ int main(int argc, char *argv[]) // will uncomment later
             // close(data_fd);
             free(t_data);
         } else {
-            pthread_detach(&new_conn->thread_id); // Detach the thread for automatic cleanup
+            pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
             // pthread_join(thread_id, NULL);
             // continue;
             // break;
