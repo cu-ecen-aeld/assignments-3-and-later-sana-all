@@ -37,7 +37,7 @@ struct thread_data {
     bool thread_complete_success;
 };
 
-typedef struct{
+typedef struct connection_t{
 	SLIST_ENTRY(connection_t) entries; // Linked list entry
 	pthread_t thread_id;
 } connection_t;
