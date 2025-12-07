@@ -38,7 +38,7 @@ struct thread_data {
 };
 
 typedef struct{
-	SLIST_ENTRY(connection) entries; // Linked list entry
+	SLIST_ENTRY(connection_t) entries; // Linked list entry
 	int socket_fd;
 } connection_t;
 
