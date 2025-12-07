@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) // will uncomment later
 	// SLIST_INIT(&head);
 	// SLIST_HEAD(head_s, connection_t) head = SLIST_HEAD_INITIALIZER(head);
 	SLIST_INIT(&head);
-	connection_t *new_conn = malloc(sizeof(connection_t));
+	// connection_t *new_conn = malloc(sizeof(connection_t));
 
 	int daemon_mode = 0;
 	// openlog("aesdsocket", LOG_PID, LOG_USER);
@@ -323,7 +323,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-        // connection_t *new_conn = malloc(sizeof(connection_t));
+        connection_t *new_conn = malloc(sizeof(connection_t));
         // new_conn->socket_fd = newsockfd;
         // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
