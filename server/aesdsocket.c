@@ -39,7 +39,7 @@ struct thread_data {
 
 typedef struct{
 	SLIST_ENTRY(connection_t) entries; // Linked list entry
-	int socket_fd;
+	pthread_t thread_id;
 } connection_t;
 
 SLIST_HEAD(slist_head, connection_t) head;
@@ -333,12 +333,12 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
         connection_t *new_conn = malloc(sizeof(connection_t));
-        new_conn->socket_fd = newsockfd;
-        SLIST_INSERT_HEAD(&head, new_conn, entries);
+        // new_conn->socket_fd = newsockfd;
+        // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
 
-        pthread_t thread_id;
-        if (pthread_create(&thread_id, NULL, handle_client, new_conn) != 0) {
+        // pthread_t thread_id;
+        if (pthread_create(&new_conn->thread_id, NULL, handle_client, new_conn) != 0) {
             syslog(LOG_ERR, "pthread_create error...");
             close(newsockfd);
             // close(data_fd);
@@ -349,6 +349,7 @@ int main(int argc, char *argv[]) // will uncomment later
             // continue;
             // break;
         }
+        SLIST_INSERT_HEAD(&head, new_conn, entries);
 
     }
 
