@@ -344,7 +344,12 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
-    // pthread_join(thread_id, NULL);
+    connection_t *current;
+    SLIST_FOREACH(current, &head, entries) {
+        pthread_join(current->thread_id, NULL); // Wait for the thread to finish
+        free(current); // Free the connection structure
+    }
+
     pthread_join(thread_timestamp_0, NULL);
 
 
