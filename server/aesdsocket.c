@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
-    connection_t *current;
+    connection_t *current = NULL;
     SLIST_FOREACH(current, &head, entries) {
         pthread_join(current->thread_id, NULL); // Wait for the thread to finish
         free(current); // Free the connection structure
