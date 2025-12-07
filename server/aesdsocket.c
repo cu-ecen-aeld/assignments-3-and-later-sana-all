@@ -21,8 +21,8 @@
 #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
 
 bool sig_quit = false;
-pthread_mutex_t mutex;
-pthread_mutex_init(&mutex, NULL);
+// pthread_mutex_t mutex;
+// pthread_mutex_init(&mutex, NULL);
 
 void error(const char *msg)
 {
@@ -44,7 +44,9 @@ typedef struct{
 
 SLIST_HEAD(slist_head, connection_t) head;
 
-void *timestamp_thread(){
+void *timestamp_thread(void *arg){
+
+	pthread_mutex_t* mtx = (pthread_mutex_t*)arg;
 
 	while(sig_quit == false)
 	{
@@ -71,7 +73,7 @@ void *timestamp_thread(){
 	   	bytes_received = strlen(buffer);
 	    buffer[bytes_received] = '\0';
 	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T\n", t_ptr);
-		pthread_mutex_lock(&mutex);
+		pthread_mutex_lock(mtx);
 		ssize_t bytes_written = write(data_fd, buffer, strlen(buffer));
 		if (bytes_written < 0) {
 	        syslog(LOG_ERR, "handle_client, write function error...");
@@ -82,7 +84,7 @@ void *timestamp_thread(){
             // Optional: Log the successful write
             syslog(LOG_INFO, "Successfully wrote timestamp: %s", buffer);
         }
-	    pthread_mutex_unlock(&mutex);
+	    pthread_mutex_unlock(&mtx);
 
 
 
@@ -248,13 +250,13 @@ int main(int argc, char *argv[]) // will uncomment later
     // sigaction part
 
 
-    // pthread_mutex_t mutex;
-    // pthread_mutex_init(&mutex, NULL);
+    pthread_mutex_t mutex;
+    pthread_mutex_init(&mutex, NULL);
     pthread_t thread_timestamp_0;
 
 
         // pthread_t thread_timestamp_0;
-    if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, NULL) != 0 ){
+    if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, (void*)&mutex) != 0 ){
     	syslog(LOG_ERR, "thread_timestamp...");
     } else {
     	pthread_detach(thread_timestamp_0);
