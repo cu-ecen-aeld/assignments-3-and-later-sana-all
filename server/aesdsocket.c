@@ -229,8 +229,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
 	printf("Server is listeasdasddsaning on port %s\n", PORT);
 
-	if( daemon_mode == 1 )
-	{
+	if( daemon_mode == 1 ){
 		int dae = daemon(1,1);
 		if(dae < 0){
 			error("daemon failed");
@@ -337,13 +336,14 @@ int main(int argc, char *argv[]) // will uncomment later
             // close(data_fd);
             free(t_data);
         } else {
-            pthread_join(new_conn->thread_id, NULL);
-
+            pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
+            // pthread_join(new_conn->thread_id, NULL);
+            // continue;
+            // break;
         }
+        // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
     }
-
-
 
     connection_t *current = NULL;
     SLIST_FOREACH(current, &head, entries) {
@@ -357,26 +357,13 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
     // cleanup();
- //    if (remove("/var/tmp/aesdsocketdata") == 0) {
- //    	printf("File deleted successfully. WWWWWWWWWWWWWWWWWWWWW\n");
-	// } else {
-	// 	printf("FError deleting file. WWWWWWWWWWWWWWWWWWWW\n");
-	//     perror("Error deleting file");
-	// }
-	pthread_mutex_destroy(&mutex);
-	shutdown(newsockfd, SHUT_RDWR);
-    close(sockfd);
-    closelog();
-    // if(!SLIST_EMPTY(&head)) releaseThreadResourcesFromList();
-
     if (remove("/var/tmp/aesdsocketdata") == 0) {
-    	printf("File deleted successfully. WWWWWWWWWWWWWWWWWWWWW\n");
+    	printf("File deleted successfully.\n");
 	} else {
-		printf("FError deleting file. WWWWWWWWWWWWWWWWWWWW\n");
 	    perror("Error deleting file");
 	}
-
-
+	pthread_mutex_destroy(&mutex);
+    close(sockfd);
     return 0;
 
 
