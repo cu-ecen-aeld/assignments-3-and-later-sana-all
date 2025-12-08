@@ -38,9 +38,8 @@ struct thread_data {
 };
 
 typedef struct connection_t{
-	pthread_t thread_id;
 	SLIST_ENTRY(connection_t) entries; // Linked list entry
-	// pthread_t thread_id;
+	pthread_t thread_id;
 } connection_t;
 
 SLIST_HEAD(slist_head, connection_t) head = SLIST_HEAD_INITIALIZER(head);
@@ -52,7 +51,7 @@ void *timestamp_thread(void *arg){
 
 	while(sig_quit == false)
 	{
-		sleep(10);
+		// sleep(10);
 
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
