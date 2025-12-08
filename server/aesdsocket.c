@@ -49,6 +49,7 @@ void *timestamp_thread(void *arg){
 
 	pthread_mutex_t* mtx = (pthread_mutex_t*)arg;
 	printf("OLOOOOOOOOOOOOL timestamp_thread\n");
+	int data_fd;
 
 	while(sig_quit == false)
 	{
@@ -92,7 +93,19 @@ void *timestamp_thread(void *arg){
 
 
 	}
-	
+
+
+	if (ftruncate(data_fd, 0) != 0) {
+        perror("Error truncating file");
+        close(data_fd);
+        return 1;
+    }
+	close(data_fd);
+	if (remove("/var/tmp/aesdsocketdata") == 0) {
+    	printf("File deleted successfully.\n");
+	} else {
+	    perror("Error deleting file");
+	}
 
  
     return NULL;
@@ -137,6 +150,19 @@ void *handle_client(void *arg){
     if (bytes_received < 0) {
         syslog(LOG_ERR, "error sending data to client...");
     }
+
+
+	if (ftruncate(data_fd, 0) != 0) {
+        perror("Error truncating file");
+        close(data_fd);
+        return 1;
+    }
+	close(data_fd);
+	if (remove("/var/tmp/aesdsocketdata") == 0) {
+    	printf("File deleted successfully.\n");
+	} else {
+	    perror("Error deleting file");
+	}
 
 
 	return NULL;
