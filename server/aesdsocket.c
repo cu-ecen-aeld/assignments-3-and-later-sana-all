@@ -49,7 +49,7 @@ void *timestamp_thread(void *arg){
 
 	pthread_mutex_t* mtx = (pthread_mutex_t*)arg;
 	printf("OLOOOOOOOOOOOOL timestamp_thread\n");
-	int data_fd;
+	int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 
 	while(sig_quit == false)
 	{
@@ -58,7 +58,7 @@ void *timestamp_thread(void *arg){
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
 	    ssize_t bytes_received;
-	    int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+	    // int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if(data_fd < 0)
 		{
 			error("send_data_to_client, open function error...");
