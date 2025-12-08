@@ -51,7 +51,7 @@ void *timestamp_thread(void *arg){
 
 	while(sig_quit == false)
 	{
-		// sleep(10);
+		sleep(10);
 
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) // will uncomment later
             // close(data_fd);
             free(t_data);
         } else {
-            pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
+            // pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
             // pthread_join(new_conn->thread_id, NULL);
             // continue;
             // break;
