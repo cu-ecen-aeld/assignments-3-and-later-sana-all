@@ -357,11 +357,11 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
     // cleanup();
-    if (remove("/var/tmp/aesdsocketdata") == 0) {
-    	printf("File deleted successfully.\n");
-	} else {
-	    perror("Error deleting file");
-	}
+ //    if (remove("/var/tmp/aesdsocketdata") == 0) {
+ //    	printf("File deleted successfully.\n");
+	// } else {
+	//     perror("Error deleting file");
+	// }
 	pthread_mutex_destroy(&mutex);
     close(sockfd);
     return 0;
