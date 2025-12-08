@@ -258,6 +258,7 @@ int main(int argc, char *argv[]) // will uncomment later
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
     pthread_t thread_timestamp_0;
+    int data_fd;
 
 
         // pthread_t thread_timestamp_0;
@@ -305,7 +306,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
 		// open data
 
-		int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+		data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if(data_fd < 0)
 		{
 			error("send_data_to_client, open function error...");
