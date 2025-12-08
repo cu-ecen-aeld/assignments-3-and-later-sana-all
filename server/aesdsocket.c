@@ -152,11 +152,11 @@ void *handle_client(void *arg){
     }
 
 
-	if (ftruncate(data_fd, 0) != 0) {
-        perror("Error truncating file");
-        close(data_fd);
-        return 1;
-    }
+	// if (ftruncate(data_fd, 0) != 0) {
+ //        perror("Error truncating file");
+ //        close(data_fd);
+ //        return 1;
+ //    }
 	close(data_fd);
 	if (remove("/var/tmp/aesdsocketdata") == 0) {
     	printf("File deleted successfully.\n");
