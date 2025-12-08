@@ -48,6 +48,7 @@ SLIST_HEAD(slist_head, connection_t) head = SLIST_HEAD_INITIALIZER(head);
 void *timestamp_thread(void *arg){
 
 	pthread_mutex_t* mtx = (pthread_mutex_t*)arg;
+	printf("OLOOOOOOOOOOOOL timestamp_thread\n");
 
 	while(sig_quit == false)
 	{
@@ -104,7 +105,7 @@ void *handle_client(void *arg){
     char buffer[BUFFER_SIZE];
     bzero(buffer, BUFFER_SIZE);
     ssize_t bytes_received;
-
+    printf("OLOOOOOOOOOOOOL handle client\n");
 
     while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
         buffer[bytes_received] = '\0';
@@ -335,7 +336,7 @@ int main(int argc, char *argv[]) // will uncomment later
             // close(data_fd);
             free(t_data);
         } else {
-            // pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
+            pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
             // pthread_join(new_conn->thread_id, NULL);
             // continue;
             // break;
