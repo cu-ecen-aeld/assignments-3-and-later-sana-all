@@ -20,7 +20,7 @@
 #define BUFFER_SIZE 1024
 #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
 
-bool sig_quit = false;
+volatile sig_atomic_t sig_quit = false;
 // pthread_mutex_t mutex;
 // pthread_mutex_init(&mutex, NULL);
 
