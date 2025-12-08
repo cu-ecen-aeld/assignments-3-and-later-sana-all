@@ -241,6 +241,7 @@ int main(int argc, char *argv[]) // will uncomment later
 		if(dae == 1){
 			exit(EXIT_SUCCESS);
 		}
+	}
 
 
 	// sigaction part
@@ -336,14 +337,13 @@ int main(int argc, char *argv[]) // will uncomment later
             // close(data_fd);
             free(t_data);
         } else {
-            // pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
             pthread_join(new_conn->thread_id, NULL);
-            // continue;
-            // break;
+
         }
-        // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
     }
+
+
 
     connection_t *current = NULL;
     SLIST_FOREACH(current, &head, entries) {
@@ -368,6 +368,6 @@ int main(int argc, char *argv[]) // will uncomment later
     closelog();
     // if(!SLIST_EMPTY(&head)) releaseThreadResourcesFromList();
     return 0;
-}
+
 
 }
