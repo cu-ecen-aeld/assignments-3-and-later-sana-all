@@ -107,7 +107,7 @@ void *handle_client(void *arg){
     ssize_t bytes_received;
     printf("OLOOOOOOOOOOOOL handle client\n");
 
-    while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0) {
+    while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 && sig_quit == false) {
         buffer[bytes_received] = '\0';
 
         // Lock the mutex before writing to the file
