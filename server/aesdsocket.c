@@ -328,7 +328,7 @@ int main(int argc, char *argv[]) // will uncomment later
         // new_conn->socket_fd = newsockfd;
         // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
-        int lomi = pthread_create(&new_conn->thread_id, NULL, handle_client, new_conn);
+        int lomi = pthread_create(&new_conn->thread_id, NULL, handle_client, t_data);
         SLIST_INSERT_HEAD(&head, new_conn, entries);
         if (lomi != 0) {
             syslog(LOG_ERR, "pthread_create error...");
