@@ -352,7 +352,7 @@ int main(int argc, char *argv[]) // will uncomment later
     }
 
     pthread_join(thread_timestamp_0, NULL);
-
+    printf("all joined WWWWWWWWW\n");
 
 
 
