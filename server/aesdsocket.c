@@ -357,16 +357,26 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
     // cleanup();
-    if (remove("/var/tmp/aesdsocketdata") == 0) {
-    	printf("File deleted successfully.\n");
-	} else {
-	    perror("Error deleting file");
-	}
+ //    if (remove("/var/tmp/aesdsocketdata") == 0) {
+ //    	printf("File deleted successfully. WWWWWWWWWWWWWWWWWWWWW\n");
+	// } else {
+	// 	printf("FError deleting file. WWWWWWWWWWWWWWWWWWWW\n");
+	//     perror("Error deleting file");
+	// }
 	pthread_mutex_destroy(&mutex);
 	shutdown(newsockfd, SHUT_RDWR);
     close(sockfd);
     closelog();
     // if(!SLIST_EMPTY(&head)) releaseThreadResourcesFromList();
+
+    if (remove("/var/tmp/aesdsocketdata") == 0) {
+    	printf("File deleted successfully. WWWWWWWWWWWWWWWWWWWWW\n");
+	} else {
+		printf("FError deleting file. WWWWWWWWWWWWWWWWWWWW\n");
+	    perror("Error deleting file");
+	}
+
+
     return 0;
 
 
