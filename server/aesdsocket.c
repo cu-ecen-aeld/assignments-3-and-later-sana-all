@@ -366,7 +366,7 @@ int main(int argc, char *argv[]) // will uncomment later
 	shutdown(newsockfd, SHUT_RDWR);
     close(sockfd);
     closelog();
-    if(!SLIST_EMPTY(&head)) releaseThreadResourcesFromList();
+    // if(!SLIST_EMPTY(&head)) releaseThreadResourcesFromList();
     return 0;
 }
 
