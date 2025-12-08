@@ -7,14 +7,13 @@
 CC ?= $(CROSS_COMPILE)gcc
 CFLAGS ?= -Wall -Werror -O0 -pthread
 LDFLAGS ?= -pthread
-LIBS=-lc -lpthread
 TARGET ?= aesdsocket
 
 all: aesdsocket
 default: aesdsocket
 
 aesdsocket: aesdsocket.c
-	$(CC) $(CFLAGS) aesdsocket.c $(LIBS) -o $(TARGET) $(LDFLAGS)
+	$(CC) $(CFLAGS) aesdsocket.c -o $(TARGET) $(LDFLAGS)
 	chmod 755 $(TARGET)  # Set permissions to 755
 
 #clean target

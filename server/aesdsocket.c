@@ -363,7 +363,10 @@ int main(int argc, char *argv[]) // will uncomment later
 	    perror("Error deleting file");
 	}
 	pthread_mutex_destroy(&mutex);
+	shutdown(newsockfd, SHUT_RDWR);
     close(sockfd);
+    closelog();
+    if(!SLIST_EMPTY(&head)) releaseThreadResourcesFromList();
     return 0;
 }
 
