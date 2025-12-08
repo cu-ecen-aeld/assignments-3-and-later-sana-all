@@ -57,7 +57,7 @@ void *timestamp_thread(void *arg){
 	    char buffer[BUFFER_SIZE];
 	    bzero(buffer, BUFFER_SIZE);
 	    ssize_t bytes_received;
-	    int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+	    int data_fd = open(DATA_FILE_PATH, O_RDWR);
 		if(data_fd < 0)
 		{
 			error("send_data_to_client, open function error...");
@@ -305,7 +305,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
 		// open data
 
-		int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+		int data_fd = open(DATA_FILE_PATH, O_RDWR);
 		if(data_fd < 0)
 		{
 			error("send_data_to_client, open function error...");
