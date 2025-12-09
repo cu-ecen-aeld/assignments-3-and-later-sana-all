@@ -95,17 +95,6 @@ void *timestamp_thread(void *arg){
 	}
 
 
- //    data_fd = open(DATA_FILE_PATH, O_RDWR | O_CREAT | O_TRUNC, 0600);
- //    if (data_fd < 0) {
- //        perror("Error opening file");
- //        // return 1;
- //    }
-	// close(data_fd);
-	// if (remove("/var/tmp/aesdsocketdata") == 0) {
- //    	printf("File deleted successfully.\n");
-	// } else {
-	//     perror("Error deleting file");
-	// }
 
  
     return NULL;
@@ -151,20 +140,6 @@ void *handle_client(void *arg){
         syslog(LOG_ERR, "error sending data to client...");
     }
 
-
-	// if (ftruncate(data_fd, 0) != 0) {
- //        perror("Error truncating file");
- //        close(data_fd);
- //        // return 1;
- //    }
-	// close(data_fd);
-	// if (remove("/var/tmp/aesdsocketdata") == 0) {
- //    	printf("File deleted successfully.\n");
-	// } else {
-	//     perror("Error deleting file");
-	// }
-
-
 	return NULL;
 }
 
@@ -189,14 +164,10 @@ void signal_handler()
 
 int main(int argc, char *argv[]) // will uncomment later
 {	
-	// initialize linkedlist
-	// SLIST_INIT(&head);
-	// SLIST_HEAD(head_s, connection_t) head = SLIST_HEAD_INITIALIZER(head);
-	SLIST_INIT(&head);
-	// connection_t *new_conn = malloc(sizeof(connection_t));
 
+	SLIST_INIT(&head);
 	int daemon_mode = 0;
-	// openlog("aesdsocket", LOG_PID, LOG_USER);
+
 	if( argc == 2 )
 	{
 		if(strcmp(argv[1], "-d") != 0)
@@ -208,7 +179,6 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 	int sockfd, newsockfd, portno;
-	// char buffer[BUFFER_SIZE];
 
 	struct sockaddr_in serv_addr;
 
@@ -267,8 +237,6 @@ int main(int argc, char *argv[]) // will uncomment later
 		int dae = daemon(1,1);
 		if(dae < 0){
 			error("daemon failed");
-			// perror("Daemonization failed");
-			// exit(EXIT_FAILURE);
 		}
 
 		if(dae == 1){
@@ -295,14 +263,12 @@ int main(int argc, char *argv[]) // will uncomment later
     int data_fd;
 
 
-        // pthread_t thread_timestamp_0;
     if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, (void*)&mutex) != 0 ){
     	syslog(LOG_ERR, "thread_timestamp...");
     } else {
     	pthread_detach(thread_timestamp_0);
     }
 
-    // pthread_t thread_id;
 
     while( sig_quit == false )
     {
@@ -345,7 +311,6 @@ int main(int argc, char *argv[]) // will uncomment later
 		{
 			error("send_data_to_client, open function error...");
 			close(data_fd);
-			// return NULL;
 			continue;
 		}
 
@@ -360,8 +325,6 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
         connection_t *new_conn = malloc(sizeof(connection_t));
-        // new_conn->socket_fd = newsockfd;
-        // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
         int lomi = pthread_create(&new_conn->thread_id, NULL, handle_client, t_data);
         SLIST_INSERT_HEAD(&head, new_conn, entries);
@@ -371,12 +334,10 @@ int main(int argc, char *argv[]) // will uncomment later
             // close(data_fd);
             free(t_data);
         } else {
-            pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
-            // pthread_join(new_conn->thread_id, NULL);
-            // continue;
-            // break;
+            // pthread_detach(new_conn->thread_id); // Detach the thread for automatic cleanup
+            pthread_join(new_conn->thread_id, NULL);
+            continue;
         }
-        // SLIST_INSERT_HEAD(&head, new_conn, entries);
 
     }
 
@@ -391,12 +352,6 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-    // cleanup();
- //    if (remove("/var/tmp/aesdsocketdata") == 0) {
- //    	printf("File deleted successfully.\n");
-	// } else {
-	//     perror("Error deleting file");
-	// }
 	if (ftruncate(data_fd, 0) != 0) {
         perror("Error truncating file");
         close(data_fd);
