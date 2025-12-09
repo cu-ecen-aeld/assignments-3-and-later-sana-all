@@ -172,7 +172,8 @@ void *handle_client(void *arg){
 
 
 void signal_handler()
-{
+{	
+	printf("OLOOOOOOOOOOOOL signal_handler\n");
 	syslog(LOG_INFO, "Caught signal, exiting");
 	sig_quit = true;
 }
