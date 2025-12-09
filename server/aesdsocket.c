@@ -98,7 +98,7 @@ void *timestamp_thread(void *arg){
     data_fd = open(DATA_FILE_PATH, O_RDWR | O_CREAT | O_TRUNC, 0600);
     if (data_fd < 0) {
         perror("Error opening file");
-        return 1;
+        // return 1;
     }
 	close(data_fd);
 	if (remove("/var/tmp/aesdsocketdata") == 0) {
@@ -152,11 +152,11 @@ void *handle_client(void *arg){
     }
 
 
-	// if (ftruncate(data_fd, 0) != 0) {
- //        perror("Error truncating file");
- //        close(data_fd);
- //        return 1;
- //    }
+	if (ftruncate(data_fd, 0) != 0) {
+        perror("Error truncating file");
+        close(data_fd);
+        // return 1;
+    }
 	close(data_fd);
 	if (remove("/var/tmp/aesdsocketdata") == 0) {
     	printf("File deleted successfully.\n");
