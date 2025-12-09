@@ -48,7 +48,7 @@ SLIST_HEAD(slist_head, connection_t) head = SLIST_HEAD_INITIALIZER(head);
 void *timestamp_thread(void *arg){
 
 	pthread_mutex_t* mtx = (pthread_mutex_t*)arg;
-	printf("OLOOOOOOOOOOOOL timestamp_thread\n");
+	// printf("OLOOOOOOOOOOOOL timestamp_thread\n");
 	int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 
 	while(sig_quit == false)
@@ -107,7 +107,7 @@ void *handle_client(void *arg){
     char buffer[BUFFER_SIZE];
     bzero(buffer, BUFFER_SIZE);
     ssize_t bytes_received;
-    printf("OLOOOOOOOOOOOOL handle client\n");
+    // printf("OLOOOOOOOOOOOOL handle client\n");
 
     while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 && sig_quit == false) {
         buffer[bytes_received] = '\0';
@@ -148,7 +148,7 @@ void *handle_client(void *arg){
 
 void signal_handler()
 {	
-	printf("OLOOOOOOOOOOOOL signal_handler\n");
+	// printf("OLOOOOOOOOOOOOL signal_handler\n");
 	syslog(LOG_INFO, "Caught signal, exiting");
 	int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 	if (ftruncate(data_fd, 0) != 0) {
@@ -341,14 +341,18 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
-    connection_t *current = NULL;
-    SLIST_FOREACH(current, &head, entries) {
-        pthread_join(current->thread_id, NULL); // Wait for the thread to finish
-        free(current); // Free the connection structure
-    }
+	connection_t *current = NULL;
+	connection_t *temp = NULL; // Temporary pointer for the next node
+
+	SLIST_FOREACH(current, &head, entries) {
+	    pthread_join(current->thread_id, NULL); // Wait for the thread to finish
+	    temp = SLIST_NEXT(current, entries); // Get the next node before freeing
+	    free(current); // Free the connection structure
+	    current = temp; // Move to the next node
+	}
 
     pthread_join(thread_timestamp_0, NULL);
-    printf("all joined WWWWWWWWW\n");
+    // printf("all joined WWWWWWWWW\n");
 
 
 

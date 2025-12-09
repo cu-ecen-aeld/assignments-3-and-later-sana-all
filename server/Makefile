@@ -5,21 +5,19 @@
 
 
 CC ?= $(CROSS_COMPILE)gcc
-CFLAGS ?= -Wall -Wextra -g
+CFLAGS ?= -Wall -Werror -O0 -pthread
 LDFLAGS ?= -Wl,--hash-style=gnu
-LIBS ?= -lpthread -lrt
+TARGET ?= aesdsocket
 
-OUTPUT = aesdsocket
-SRC = aesdsocket.c
+all: aesdsocket
+default: aesdsocket
 
-all: $(OUTPUT)
+aesdsocket: aesdsocket.c
+	$(CC) $(CFLAGS) aesdsocket.c -o $(TARGET) $(LDFLAGS)
+	chmod 755 $(TARGET)  # Set permissions to 755
 
-default: all
-
-$(OUTPUT): $(SRC)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
-
+#clean target
 clean:
-	rm -f $(OUTPUT)
+	rm -f aesdsocket *.o
 
 .PHONY: all default clean
