@@ -178,7 +178,7 @@ void signal_handler()
 	if (ftruncate(data_fd, 0) != 0) {
         perror("Error truncating file");
         close(data_fd);
-        return 1;
+        // return 1;
     }
 	sig_quit = true;
 }
