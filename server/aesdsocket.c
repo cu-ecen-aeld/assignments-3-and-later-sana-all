@@ -175,6 +175,11 @@ void signal_handler()
 {	
 	printf("OLOOOOOOOOOOOOL signal_handler\n");
 	syslog(LOG_INFO, "Caught signal, exiting");
+	if (ftruncate(data_fd, 0) != 0) {
+        perror("Error truncating file");
+        close(data_fd);
+        return 1;
+    }
 	sig_quit = true;
 }
 
