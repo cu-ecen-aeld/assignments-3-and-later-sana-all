@@ -175,11 +175,13 @@ void signal_handler()
 {	
 	printf("OLOOOOOOOOOOOOL signal_handler\n");
 	syslog(LOG_INFO, "Caught signal, exiting");
+	int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 	if (ftruncate(data_fd, 0) != 0) {
         perror("Error truncating file");
         close(data_fd);
         // return 1;
     }
+    close(data_fd);
 	sig_quit = true;
 }
 
