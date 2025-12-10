@@ -147,7 +147,7 @@ void *handle_client(void *arg){
         syslog(LOG_ERR, "error sending data to client...");
     }
 
-    close(data_fd);
+    close(newsockfd);
 
 	return NULL;
 }
