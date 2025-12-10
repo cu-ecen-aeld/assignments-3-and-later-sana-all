@@ -148,6 +148,7 @@ void *handle_client(void *arg){
     }
 
     close(data_fd);
+    close(newsockfd);
 
 	return NULL;
 }
@@ -355,6 +356,12 @@ int main(int argc, char *argv[]) // will uncomment later
         pthread_join(current->thread_id, NULL); // Wait for the thread to finish
         free(current); // Free the connection structure
     }
+    if(current != NULL){
+    	free(current);
+    	current = NULL;
+    }
+    head = NULL;
+    unlink(DATA_FILE_PATH);
 
     pthread_join(thread_timestamp_0, NULL);
     // printf("all joined WWWWWWWWW\n");
