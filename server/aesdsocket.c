@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <time.h>
-#include "queue.h"
+// #include "queue.h"
 
 #define PORT "9000"
 #define BUFFER_SIZE 1024
@@ -24,12 +24,12 @@ volatile sig_atomic_t sig_quit = false;
 // pthread_mutex_t mutex;
 // pthread_mutex_init(&mutex, NULL);
 
-// struct thread_node {
-//     pthread_t thread_id;
-//     int client_fd;
-//     int completed;
-//     struct thread_node *next;
-// };
+struct thread_node {
+    pthread_t thread_id;
+    int client_fd;
+    // int completed;
+    struct thread_node *next;
+};
 
 void error(const char *msg)
 {
@@ -44,13 +44,14 @@ struct thread_data {
     bool thread_complete_success;
 };
 
-typedef struct connection_t{
-	SLIST_ENTRY(connection_t) entries; // Linked list entry
-	pthread_t thread_id;
-} connection_t;
+// typedef struct connection_t{
+// 	SLIST_ENTRY(connection_t) entries; // Linked list entry
+// 	pthread_t thread_id;
+// } connection_t;
 
-SLIST_HEAD(slist_head, connection_t) head = SLIST_HEAD_INITIALIZER(head);
-// SLIST_HEAD(head_s, connection_t) head = SLIST_HEAD_INITIALIZER(head);
+
+struct thread_node *head = NULL;
+struct thread_node *current = NULL;
 
 void *timestamp_thread(void *arg){
 
@@ -334,10 +335,24 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-        connection_t *new_conn = malloc(sizeof(connection_t));
+        // connection_t *new_conn = malloc(sizeof(connection_t));
+
+        struct thread_node *new_conn = malloc(sizeof(struct thread_node));
+        new_conn->client_fd = newsockfd;
+        new_conn->next = NULL;
+
+
 
         int lomi = pthread_create(&new_conn->thread_id, NULL, handle_client, t_data);
-        SLIST_INSERT_HEAD(&head, new_conn, entries);
+        // SLIST_INSERT_HEAD(&head, new_conn, entries);
+        if( head == NULL ){
+        	head = new_conn;
+        	current = head;
+        }else{
+        	current.next = new_conn;
+        	current = current.next;
+        }
+        // 
         if (lomi != 0) {
             syslog(LOG_ERR, "pthread_create error...");
             close(newsockfd);
@@ -351,16 +366,18 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
-    connection_t *current = NULL;
-    SLIST_FOREACH(current, &head, entries) {
-        pthread_join(current->thread_id, NULL); // Wait for the thread to finish
-        free(current); // Free the connection structure
+
+
+
+    // connection_t *nyapi = head;
+    while(head != NULL){
+    	pthread_join(head->thread_id, NULL);
+
+    	head = head.next;
     }
-    if(current != NULL){
-    	free(current);
-    	current = NULL;
-    }
-    // head = NULL;
+
+
+
     unlink(DATA_FILE_PATH);
 
     pthread_join(thread_timestamp_0, NULL);
