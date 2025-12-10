@@ -101,7 +101,7 @@ void *timestamp_thread(void *arg){
 
 	}
 
-	close(data_fd);
+	// close(data_fd);
 
  
     return NULL;
