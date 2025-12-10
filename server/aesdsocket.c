@@ -360,7 +360,7 @@ int main(int argc, char *argv[]) // will uncomment later
     	free(current);
     	current = NULL;
     }
-    head = NULL;
+    // head = NULL;
     unlink(DATA_FILE_PATH);
 
     pthread_join(thread_timestamp_0, NULL);
