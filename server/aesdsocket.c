@@ -24,18 +24,25 @@ volatile sig_atomic_t sig_quit = false;
 // pthread_mutex_t mutex;
 // pthread_mutex_init(&mutex, NULL);
 
+struct thread_node {
+    pthread_t thread_id;
+    int client_fd;
+    int completed;
+    struct thread_node *next;
+};
+
 void error(const char *msg)
 {
 	perror(msg);
 	exit(EXIT_FAILURE);
 }
 
-struct thread_data {
-    pthread_mutex_t *mutex;
-    int newsockfd;
-    int data_fd;
-    bool thread_complete_success;
-};
+// struct thread_data {
+//     pthread_mutex_t *mutex;
+//     int newsockfd;
+//     int data_fd;
+//     bool thread_complete_success;
+// };
 
 typedef struct connection_t{
 	SLIST_ENTRY(connection_t) entries; // Linked list entry
@@ -94,7 +101,7 @@ void *timestamp_thread(void *arg){
 
 	}
 
-
+	close(data_fd);
 
  
     return NULL;
@@ -139,6 +146,8 @@ void *handle_client(void *arg){
     if (bytes_received < 0) {
         syslog(LOG_ERR, "error sending data to client...");
     }
+
+    close(data_fd);
 
 	return NULL;
 }
@@ -341,15 +350,11 @@ int main(int argc, char *argv[]) // will uncomment later
 
     }
 
-	connection_t *current = NULL;
-	connection_t *temp = NULL; // Temporary pointer for the next node
-
-	SLIST_FOREACH(current, &head, entries) {
-	    pthread_join(current->thread_id, NULL); // Wait for the thread to finish
-	    temp = SLIST_NEXT(current, entries); // Get the next node before freeing
-	    free(current); // Free the connection structure
-	    current = temp; // Move to the next node
-	}
+    connection_t *current = NULL;
+    SLIST_FOREACH(current, &head, entries) {
+        pthread_join(current->thread_id, NULL); // Wait for the thread to finish
+        free(current); // Free the connection structure
+    }
 
     pthread_join(thread_timestamp_0, NULL);
     // printf("all joined WWWWWWWWW\n");
