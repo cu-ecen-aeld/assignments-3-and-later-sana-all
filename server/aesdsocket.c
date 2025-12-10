@@ -351,6 +351,7 @@ int main(int argc, char *argv[]) // will uncomment later
         }else{
         	current->next = new_conn;
         	current = current->next;
+        	current->next = NULL;
         }
         // 
         if (lomi != 0) {
@@ -372,13 +373,13 @@ int main(int argc, char *argv[]) // will uncomment later
     // connection_t *nyapi = head;
     while(head != NULL){
     	pthread_join(head->thread_id, NULL);
-
+    	printf("HAHAHA\n");
     	head = head->next;
     }
 
 
 
-    unlink(DATA_FILE_PATH);
+    // unlink(DATA_FILE_PATH);
 
     pthread_join(thread_timestamp_0, NULL);
     // printf("all joined WWWWWWWWW\n");
@@ -392,6 +393,8 @@ int main(int argc, char *argv[]) // will uncomment later
     }
 	close(data_fd);
 	pthread_mutex_destroy(&mutex);
+	unlink(DATA_FILE_PATH);
+
     close(sockfd);
     if (remove("/var/tmp/aesdsocketdata") == 0) {
     	printf("File deleted successfully.\n");
