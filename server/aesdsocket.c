@@ -24,12 +24,12 @@ volatile sig_atomic_t sig_quit = false;
 // pthread_mutex_t mutex;
 // pthread_mutex_init(&mutex, NULL);
 
-struct thread_node {
-    pthread_t thread_id;
-    int client_fd;
-    int completed;
-    struct thread_node *next;
-};
+// struct thread_node {
+//     pthread_t thread_id;
+//     int client_fd;
+//     int completed;
+//     struct thread_node *next;
+// };
 
 void error(const char *msg)
 {
@@ -37,12 +37,12 @@ void error(const char *msg)
 	exit(EXIT_FAILURE);
 }
 
-// struct thread_data {
-//     pthread_mutex_t *mutex;
-//     int newsockfd;
-//     int data_fd;
-//     bool thread_complete_success;
-// };
+struct thread_data {
+    pthread_mutex_t *mutex;
+    int newsockfd;
+    int data_fd;
+    bool thread_complete_success;
+};
 
 typedef struct connection_t{
 	SLIST_ENTRY(connection_t) entries; // Linked list entry
@@ -101,7 +101,7 @@ void *timestamp_thread(void *arg){
 
 	}
 
-	// close(data_fd);
+	close(data_fd);
 
  
     return NULL;
@@ -147,7 +147,7 @@ void *handle_client(void *arg){
         syslog(LOG_ERR, "error sending data to client...");
     }
 
-    // close(newsockfd);
+    close(data_fd);
 
 	return NULL;
 }
