@@ -176,7 +176,7 @@ void signal_handler()
 int main(int argc, char *argv[]) // will uncomment later
 {	
 
-	SLIST_INIT(&head);
+	// SLIST_INIT(&head);
 	int daemon_mode = 0;
 
 	if( argc == 2 )
@@ -349,8 +349,8 @@ int main(int argc, char *argv[]) // will uncomment later
         	head = new_conn;
         	current = head;
         }else{
-        	current.next = new_conn;
-        	current = current.next;
+        	current->next = new_conn;
+        	current = current->next;
         }
         // 
         if (lomi != 0) {
@@ -373,7 +373,7 @@ int main(int argc, char *argv[]) // will uncomment later
     while(head != NULL){
     	pthread_join(head->thread_id, NULL);
 
-    	head = head.next;
+    	head = head->next;
     }
 
 
