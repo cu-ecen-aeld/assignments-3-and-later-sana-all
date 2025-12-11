@@ -388,6 +388,7 @@ int main(int argc, char *argv[]) // will uncomment later
     		head_next = head_next->next;
     	}
     }
+    free(head);
 
 
 
