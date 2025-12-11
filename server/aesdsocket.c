@@ -371,14 +371,14 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-    connection_t *head_temp = head;
+    thread_node *head_temp = head;
     while(head_temp != NULL){
     	pthread_join(head_temp->thread_id, NULL);
     	printf("HAHAHA\n");
     	head_temp = head_temp->next;
     }
 
-    connection_t *head_next = head->next;
+    thread_node *head_next = head->next;
     while(head != NULL){
     	free(head);
     	head = head_next;
