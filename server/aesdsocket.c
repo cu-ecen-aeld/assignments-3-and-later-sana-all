@@ -399,11 +399,11 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-	if (ftruncate(data_fd, 0) != 0) {
-        perror("Error truncating file");
-        close(data_fd);
-        return 1;
-    }
+	// if (ftruncate(data_fd, 0) != 0) {
+ //        perror("Error truncating file");
+ //        close(data_fd);
+ //        return 1;
+ //    }
 	close(data_fd);
 	pthread_mutex_destroy(&mutex);
 	unlink(DATA_FILE_PATH);
