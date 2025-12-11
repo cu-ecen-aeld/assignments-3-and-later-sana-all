@@ -371,11 +371,22 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-    // connection_t *nyapi = head;
-    while(head != NULL){
-    	pthread_join(head->thread_id, NULL);
+    connection_t *head_temp = head;
+    while(head_temp != NULL){
+    	pthread_join(head_temp->thread_id, NULL);
     	printf("HAHAHA\n");
-    	head = head->next;
+    	head_temp = head_temp->next;
+    }
+
+    connection_t *head_next = head->next;
+    while(head != NULL){
+    	free(head);
+    	head = head_next;
+    	if(head_next.next == NULL){
+    		head_next = NULL;
+    	}else{
+    		head_next = head_next.next;
+    	}
     }
 
 
