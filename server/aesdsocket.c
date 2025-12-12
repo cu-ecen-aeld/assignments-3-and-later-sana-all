@@ -39,8 +39,9 @@ void error(const char *msg)
 
 struct thread_data {
     pthread_mutex_t *mutex;
-    int *newsockfd;
-    // int data_fd;
+    int newsockfd;
+    int data_fd;
+    bool thread_complete_success;
 };
 
 // typedef struct connection_t{
@@ -109,15 +110,14 @@ void *timestamp_thread(void *arg){
 
 void *handle_client(void *arg){
 	struct thread_data *t_data = (struct thread_data *)arg;
-    int *newsockfd = t_data->newsockfd;
-    // int data_fd = t_data->data_fd;
-    int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+    int newsockfd = t_data->newsockfd;
+    int data_fd = t_data->data_fd;
     char buffer[BUFFER_SIZE];
     bzero(buffer, BUFFER_SIZE);
     ssize_t bytes_received;
     // printf("OLOOOOOOOOOOOOL handle client\n");
 
-    while ((bytes_received = recv(*newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 && sig_quit == false) {
+    while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 && sig_quit == false) {
         buffer[bytes_received] = '\0';
 
         // Lock the mutex before writing to the file
@@ -137,7 +137,7 @@ void *handle_client(void *arg){
 
             // Read the entire content of the file and send it to the client
             while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
-                send(*newsockfd, read_buffer, read_bytes, 0);
+                send(newsockfd, read_buffer, read_bytes, 0);
             }
             lseek(data_fd, 0, SEEK_END);
         }
@@ -149,7 +149,7 @@ void *handle_client(void *arg){
     }
 
     close(data_fd);
-    close(*newsockfd);
+    close(newsockfd);
     free(t_data);
 
 	return NULL;
@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) // will uncomment later
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
     pthread_t thread_timestamp_0;
-    // int data_fd;
+    int data_fd;
 
 
     if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, (void*)&mutex) != 0 ){
@@ -318,20 +318,22 @@ int main(int argc, char *argv[]) // will uncomment later
 
 		// open data
 
-		// int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
-		// if(data_fd < 0)
-		// {
-		// 	error("send_data_to_client, open function error...");
-		// 	close(data_fd);
-		// 	continue;
-		// }
+		data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+		if(data_fd < 0)
+		{
+			error("send_data_to_client, open function error...");
+			close(data_fd);
+			continue;
+		}
 
 
 
 		struct thread_data *t_data = malloc(sizeof(struct thread_data));
 		t_data->mutex = &mutex;
-		t_data->newsockfd = &newsockfd;
-		// t_data->data_fd = data_fd;
+		t_data->newsockfd = newsockfd;
+		t_data->data_fd = data_fd;
+        t_data->thread_complete_success = false;
+
 
 
         // connection_t *new_conn = malloc(sizeof(connection_t));
@@ -402,7 +404,7 @@ int main(int argc, char *argv[]) // will uncomment later
  //        close(data_fd);
  //        return 1;
  //    }
-	// close(data_fd);
+	close(data_fd);
 	pthread_mutex_destroy(&mutex);
 	unlink(DATA_FILE_PATH);
 
