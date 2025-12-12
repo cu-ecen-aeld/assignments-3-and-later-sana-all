@@ -117,7 +117,7 @@ void *handle_client(void *arg){
     ssize_t bytes_received;
     // printf("OLOOOOOOOOOOOOL handle client\n");
 
-    while ((bytes_received = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 && sig_quit == false) {
+    while ((bytes_received = recv(*newsockfd, buffer, BUFFER_SIZE - 1, 0)) > 0 && sig_quit == false) {
         buffer[bytes_received] = '\0';
 
         // Lock the mutex before writing to the file
@@ -130,17 +130,17 @@ void *handle_client(void *arg){
         pthread_mutex_unlock(t_data->mutex);
 
         // Check if the last character is a newline
-        if (buffer[bytes_received - 1] == '\n') {
-            lseek(data_fd, 0, SEEK_SET);
-            char read_buffer[BUFFER_SIZE];
-            ssize_t read_bytes;
+        // if (buffer[bytes_received - 1] == '\n') {
+        //     lseek(data_fd, 0, SEEK_SET);
+        //     char read_buffer[BUFFER_SIZE];
+        //     ssize_t read_bytes;
 
-            // Read the entire content of the file and send it to the client
-            while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
-                send(newsockfd, read_buffer, read_bytes, 0);
-            }
-            lseek(data_fd, 0, SEEK_END);
-        }
+        //     // Read the entire content of the file and send it to the client
+        //     while ((read_bytes = read(data_fd, read_buffer, BUFFER_SIZE)) > 0) {
+        //         send(newsockfd, read_buffer, read_bytes, 0);
+        //     }
+        //     lseek(data_fd, 0, SEEK_END);
+        // }
     }
 
 
@@ -149,7 +149,7 @@ void *handle_client(void *arg){
     }
 
     close(data_fd);
-    close(newsockfd);
+    close(*newsockfd);
     free(t_data);
 
 	return NULL;
