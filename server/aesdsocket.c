@@ -372,27 +372,14 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-    struct thread_node *head_temp = head;
-    while(head_temp != NULL){
-    	pthread_join(head_temp->thread_id, NULL);
-    	printf("HAHAHA\n");
-    	head_temp = head_temp->next;
-    }
+	struct thread_node *head_temp = head;
+	while (head_temp != NULL) {
+	    pthread_join(head_temp->thread_id, NULL); // Join the thread
+	    // printf("HAHAHA\n");
+	    head_temp = head_temp->next; // Move to the next node
+	}
 
-    // struct thread_node *head_next = head->next;
-    // while(head != NULL){
-    // 	free(head);
-    // 	head = head_next;
-    // 	if(head_next->next == NULL){
-    // 		head_next = NULL;
-    // 	}else{
-    // 		head_next = head_next->next;
-    // 	}
-    // }
-    // free(head);
-
-    struct thread_node *head_next;
-
+	struct thread_node *head_next;
 	while (head != NULL) {
 	    head_next = head->next; // Store the next node before freeing
 	    free(head);             // Free the current node
@@ -401,22 +388,10 @@ int main(int argc, char *argv[]) // will uncomment later
 
 
 
-    // unlink(DATA_FILE_PATH);
 
     pthread_join(thread_timestamp_0, NULL);
-    // printf("all joined WWWWWWWWW\n");
 
-
-
-	// if (ftruncate(data_fd, 0) != 0) {
- //        perror("Error truncating file");
- //        close(data_fd);
- //        return 1;
- //    }
-	// close(data_fd);
 	pthread_mutex_destroy(&mutex);
-	// unlink(DATA_FILE_PATH);
-
     close(sockfd);
     if (remove("/var/tmp/aesdsocketdata") == 0) {
     	printf("File deleted successfully.\n");
