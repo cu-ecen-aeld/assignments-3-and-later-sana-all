@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) // will uncomment later
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
     pthread_t thread_timestamp_0;
-    int data_fd;
+    // int data_fd;
 
 
     if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, (void*)&mutex) != 0 ){
@@ -318,7 +318,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
 		// open data
 
-		data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+		int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if(data_fd < 0)
 		{
 			error("send_data_to_client, open function error...");
@@ -333,6 +333,7 @@ int main(int argc, char *argv[]) // will uncomment later
 		t_data->newsockfd = newsockfd;
 		t_data->data_fd = data_fd;
         t_data->thread_complete_success = false;
+        // freed in handle_client
 
 
 
@@ -378,17 +379,25 @@ int main(int argc, char *argv[]) // will uncomment later
     	head_temp = head_temp->next;
     }
 
-    struct thread_node *head_next = head->next;
-    while(head != NULL){
-    	free(head);
-    	head = head_next;
-    	if(head_next->next == NULL){
-    		head_next = NULL;
-    	}else{
-    		head_next = head_next->next;
-    	}
-    }
-    free(head);
+    // struct thread_node *head_next = head->next;
+    // while(head != NULL){
+    // 	free(head);
+    // 	head = head_next;
+    // 	if(head_next->next == NULL){
+    // 		head_next = NULL;
+    // 	}else{
+    // 		head_next = head_next->next;
+    // 	}
+    // }
+    // free(head);
+
+    struct thread_node *head_next;
+
+	while (head != NULL) {
+	    head_next = head->next; // Store the next node before freeing
+	    free(head);             // Free the current node
+	    head = head_next;       // Move to the next node
+	}
 
 
 
@@ -404,9 +413,9 @@ int main(int argc, char *argv[]) // will uncomment later
  //        close(data_fd);
  //        return 1;
  //    }
-	close(data_fd);
+	// close(data_fd);
 	pthread_mutex_destroy(&mutex);
-	unlink(DATA_FILE_PATH);
+	// unlink(DATA_FILE_PATH);
 
     close(sockfd);
     if (remove("/var/tmp/aesdsocketdata") == 0) {
