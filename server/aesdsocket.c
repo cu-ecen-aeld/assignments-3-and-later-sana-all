@@ -18,7 +18,11 @@
 
 #define PORT "9000"
 #define BUFFER_SIZE 1024
+// #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
+#define DATA_FILE_PATH "/dev/aesdchar"
+#else
 #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
+#endif
 
 volatile sig_atomic_t sig_quit = false;
 // pthread_mutex_t mutex;
@@ -393,7 +397,7 @@ int main(int argc, char *argv[]) // will uncomment later
 
 	pthread_mutex_destroy(&mutex);
     close(sockfd);
-    if (remove("/var/tmp/aesdsocketdata") == 0) {
+    if (remove(DATA_FILE_PATH) == 0) {
     	printf("File deleted successfully.\n");
 	} else {
 	    perror("Error deleting file");
