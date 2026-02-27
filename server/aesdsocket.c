@@ -18,7 +18,13 @@
 
 #define PORT "9000"
 #define BUFFER_SIZE 1024
+// #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
+#ifndef USE_AESD_CHAR_DEVICE
+#define USE_ASED_CHAR_DEVICE 1
 #define DATA_FILE_PATH "/dev/aesdchar"
+#else
+#define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
+#endif
 
 volatile sig_atomic_t sig_quit = false;
 // pthread_mutex_t mutex;
