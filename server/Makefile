@@ -5,7 +5,7 @@
 
 
 CC ?= $(CROSS_COMPILE)gcc
-CFLAGS ?= -Wall -Werror -O0 -pthread -DUSE_AESD_CHAR_DEVICE
+CFLAGS ?= -Wall -Werror -O0 -pthread
 LDFLAGS ?= -Wl,--hash-style=gnu
 TARGET ?= aesdsocket
 
