@@ -26,41 +26,33 @@
  * @return the struct aesd_buffer_entry structure representing the position described by char_offset, or
  * NULL if this position is not available in the buffer (not enough data is written).
  */
-struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct aesd_circular_buffer *buffer,
-            size_t char_offset, size_t *entry_offset_byte_rtn )
+struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(
+    struct aesd_circular_buffer *buffer,
+    size_t char_offset,
+    size_t *entry_offset_byte_rtn)
 {
+    size_t running_size = 0;
+    uint8_t count, index, total;
 
-    /**
-    * TODO: implement per description
-    */
+    if (buffer->full) {
+        total = AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+    } else {
+        total = (buffer->in_offs - buffer->out_offs + AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED)
+                % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+    }
 
-		
-	
-    	struct aesd_buffer_entry *e = NULL;
-    	size_t char_size = 0;
-    	int i; 
-	int count;
-    	for (i = buffer->out_offs, count = 0; count < AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED; i = (i+1) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED, count++){
-		if(i == buffer->in_offs && !buffer->full){ break; } // empty
-		
-		char_size+=buffer->entry[i].size;
-		
-		if (char_offset < char_size) { 
-			size_t temp0 = char_size - buffer->entry[i].size; 
-			size_t temp1 = char_offset - temp0; 
-			
-			*entry_offset_byte_rtn = temp1;
-			return &buffer->entry[i]; 
-		}
-		
-    	}
-    	
-    	
-    
-	return e;
-    
-    
+    for (count = 0; count < total; count++) {
+        index = (buffer->out_offs + count) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+        if (char_offset < running_size + buffer->entry[index].size) {
+            *entry_offset_byte_rtn = char_offset - running_size;
+            return &buffer->entry[index];
+        }
+        running_size += buffer->entry[index].size;
+    }
+
+    return NULL;
 }
+
 
 /**
 * Adds entry @param add_entry to @param buffer in the location specified in buffer->in_offs.
