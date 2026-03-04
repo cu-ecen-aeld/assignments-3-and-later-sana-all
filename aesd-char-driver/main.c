@@ -140,7 +140,9 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 
         if(device->cb.full) {kfree(device->cb.entry[device->cb.in_offs].buffptr); }
         aesd_circular_buffer_add_entry(&device->cb, &new_entry);
-        memset(&device->be, 0, sizeof(struct aesd_buffer_entry));
+
+        device->be.buffptr = NULL; 
+        device->be.size = 0
     }
 
     retval = count;
