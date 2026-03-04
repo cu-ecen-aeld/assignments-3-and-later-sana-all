@@ -132,22 +132,23 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 
     device->be.size = characters;
 
-    if (buffer[characters - 1] == '\n'){
+    if (device->be.buffptr[device->be.size - 1] == '\n') {
         struct aesd_buffer_entry new_entry;
 
+        // Allocate a copy for the circular buffer
         new_entry.buffptr = device->be.buffptr;
         new_entry.size = device->be.size;
 
+        if (device->cb.full) {
+            kfree(device->cb.entry[device->cb.out_offs].buffptr);
+        }
+        aesd_circular_buffer_add_entry(&device->cb, &new_entry);
 
-    if (device->cb.full) {
-        kfree(device->cb.entry[device->cb.out_offs].buffptr);
-    }
-    aesd_circular_buffer_add_entry(&device->cb, &new_entry);
-
-
-        device->be.buffptr = NULL; 
+        // Reset be for next accumulation
+        device->be.buffptr = NULL;
         device->be.size = 0;
     }
+
 
     retval = count;
     mutex_unlock(&device->mtx);
