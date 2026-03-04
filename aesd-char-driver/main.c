@@ -98,18 +98,21 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
      * TODO: handle write
      */
 
-    int rc = 0;
+    int rc;
     struct aesd_dev *device = filp->private_data;
+    size_t characters;
+    char *buffer;
     rc = mutex_lock_interruptible(&device->mtx);
     if(rc != 0){return -EFAULT;}
 
-    size_t characters = device->be.size + count;
-    char *buffer =  kmalloc(characters, GFP_KERNEL);
+
+    characters = device->be.size + count;
+    buffer =  kmalloc(characters, GFP_KERNEL);
 
     if(buffer == NULL){
         mutex_unlock(&device->mtx);
         // return rc;
-        return -EFAULT; 
+        return -ENOMEM; 
     }
 
     if( device->be.buffptr != NULL ){
@@ -122,6 +125,7 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
     rc = copy_from_user(device->be.buffptr + device->be.size, buf, count);
 
     if( rc != 0 ) {
+        kfree(buffer);
         mutex_unlock(&device->mtx);
         return -EFAULT;
     }
@@ -129,8 +133,13 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
     device->be.size = characters;
 
     if (buffer[characters - 1] == '\n'){
+        struct aesd_buffer_entry new_entry;
+        new_entry.buffptr = device->be.buffptr;
+        new_entry.size = device->be.size;
+
+
         if(device->cb.full) {kfree(device->cb.entry[device->cb.in_offs].buffptr); }
-        aesd_circular_buffer_add_entry(&device->cb, &device->be);
+        aesd_circular_buffer_add_entry(&device->cb, &new_entry);
         memset(&device->be, 0, sizeof(struct aesd_buffer_entry));
     }
 
