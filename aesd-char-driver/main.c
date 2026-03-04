@@ -134,12 +134,16 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 
     if (buffer[characters - 1] == '\n'){
         struct aesd_buffer_entry new_entry;
+
         new_entry.buffptr = device->be.buffptr;
         new_entry.size = device->be.size;
 
 
-        if(device->cb.full) {kfree(device->cb.entry[device->cb.in_offs].buffptr); }
-        aesd_circular_buffer_add_entry(&device->cb, &new_entry);
+    if (device->cb.full) {
+        kfree(device->cb.entry[device->cb.out_offs].buffptr);
+    }
+    aesd_circular_buffer_add_entry(&device->cb, &new_entry);
+
 
         device->be.buffptr = NULL; 
         device->be.size = 0;
@@ -149,6 +153,8 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
     mutex_unlock(&device->mtx);
     return retval;
 }
+
+
 struct file_operations aesd_fops = {
     .owner =    THIS_MODULE,
     .read =     aesd_read,
