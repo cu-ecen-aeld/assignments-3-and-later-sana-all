@@ -142,7 +142,7 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
         aesd_circular_buffer_add_entry(&device->cb, &new_entry);
 
         device->be.buffptr = NULL; 
-        device->be.size = 0
+        device->be.size = 0;
     }
 
     retval = count;
@@ -210,7 +210,8 @@ void aesd_cleanup_module(void)
     /**
      * TODO: cleanup AESD specific poritions here as necessary
      */
-    int index = 0;
+    int index;
+    index = 0;
     struct aesd_buffer_entry *entry = NULL;
     AESD_CIRCULAR_BUFFER_FOREACH(entry, &aesd_device.cb, index)
     {
