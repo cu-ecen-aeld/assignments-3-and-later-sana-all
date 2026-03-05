@@ -72,28 +72,26 @@ ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
 
     // struct aesd_buffer_entry *entry = NULL;
 
-    while ( count > 0 ) {
-        entry = aesd_circular_buffer_find_entry_offset_for_fpos(&device->cb, *f_pos, &offset);
-        if(!entry){
-            break;
-        }
+    size_t copied = 0;
 
+    while (count > 0) {
+        entry = aesd_circular_buffer_find_entry_offset_for_fpos(&device->cb, *f_pos, &offset);
+        if (!entry) break;
 
         size_t available = entry->size - offset;
         size_t to_copy = (available > count) ? count : available;
 
-        if (copy_to_user(buf, entry->buffptr + offset, to_copy)){
+        if (copy_to_user(buf + copied, entry->buffptr + offset, to_copy)) {
             retval = -EFAULT;
             break;
         }
 
-        buf += to_copy;
-        *f_pos += to_copy; 
-        retval += to_copy; 
+        *f_pos += to_copy;
+        retval += to_copy;
+        copied += to_copy;
         count -= to_copy;
-
-        
     }
+
 
     mutex_unlock(&device->mtx);
 
