@@ -68,61 +68,44 @@ struct thread_node *current = NULL;
 
 
 #if !USE_AESD_CHAR_DEVICE
-void *timestamp_thread(void *arg){
+void *timestamp_thread(void *arg)
+{
+    pthread_mutex_t *mtx = (pthread_mutex_t *)arg;
+    int data_fd = open(DATA_FILE_PATH, O_RDWR | O_CREAT | O_APPEND, 0600);
+    if (data_fd < 0) {
+        syslog(LOG_ERR, "timestamp_thread: open failed: %s", strerror(errno));
+        return NULL;
+    }
 
-	pthread_mutex_t* mtx = (pthread_mutex_t*)arg;
-	// printf("OLOOOOOOOOOOOOL timestamp_thread\n");
-	int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
+    while (!sig_quit) {
+        sleep(10);
 
-	while(sig_quit == false)
-	{
-		sleep(10);
+        char buffer[BUFFER_SIZE];
+        struct tm *t_ptr;
+        time_t t = time(NULL);
+        t_ptr = localtime(&t);
 
-	    char buffer[BUFFER_SIZE];
-	    bzero(buffer, BUFFER_SIZE);
-	    ssize_t bytes_received;
-	    // int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
-		if(data_fd < 0)
-		{
-			error("send_data_to_client, open function error...");
-			close(data_fd);
-			return NULL;
-			// continue;
-		}
-	    struct tm *t_ptr;
-    	time_t t;
-
-
-
-	    t = time(NULL);
-	    t_ptr = localtime(&t);
-	   	bytes_received = strlen(buffer);
-	    buffer[bytes_received] = '\0';
-	    strftime(buffer,BUFFER_SIZE, "timestamp:%F %T\n", t_ptr);
-		pthread_mutex_lock(mtx);
-		ssize_t bytes_written = write(data_fd, buffer, strlen(buffer));
-		if (bytes_written < 0) {
-	        syslog(LOG_ERR, "handle_client, write function error...");
-	        // pthread_mutex_unlock(t_data->mutex);
-	        // break;
-	    }
-	    else {
-            // Optional: Log the successful write
-            syslog(LOG_INFO, "Successfully wrote timestamp: %s", buffer);
+        size_t len = strftime(buffer, sizeof(buffer), "timestamp:%F %T\n", t_ptr);
+        if (len == 0) {
+            syslog(LOG_ERR, "timestamp_thread: strftime failed");
+            continue;
         }
-	    pthread_mutex_unlock(mtx);
 
+        pthread_mutex_lock(mtx);
+        ssize_t bytes_written = write(data_fd, buffer, len);
+        if (bytes_written < 0) {
+            syslog(LOG_ERR, "timestamp_thread: write failed: %s", strerror(errno));
+        } else {
+            syslog(LOG_INFO, "timestamp_thread wrote %zd bytes", bytes_written);
+        }
+        pthread_mutex_unlock(mtx);
+    }
 
-
-
-	}
-
-	close(data_fd);
-
- 
+    close(data_fd);
     return NULL;
 }
 #endif
+
 
 
 void *handle_client(void *arg){
@@ -176,18 +159,22 @@ void *handle_client(void *arg){
 
 
 void signal_handler()
-{	
-	// printf("OLOOOOOOOOOOOOL signal_handler\n");
-	syslog(LOG_INFO, "Caught signal, exiting");
-	int data_fd = open(DATA_FILE_PATH, O_RDWR|O_CREAT|O_APPEND, 0600);
-	if (ftruncate(data_fd, 0) != 0) {
-        perror("Error truncating file");
+{
+    syslog(LOG_INFO, "Caught signal, exiting");
+#if !USE_AESD_CHAR_DEVICE
+    int data_fd = open(DATA_FILE_PATH, O_RDWR | O_CREAT, 0600);
+    if (data_fd >= 0) {
+        if (ftruncate(data_fd, 0) != 0) {
+            syslog(LOG_ERR, "signal_handler: ftruncate failed: %s", strerror(errno));
+        }
         close(data_fd);
-        // return 1;
+    } else {
+        syslog(LOG_ERR, "signal_handler: open failed: %s", strerror(errno));
     }
-    close(data_fd);
-	sig_quit = true;
+#endif
+    sig_quit = true;
 }
+
 
 
 
@@ -293,11 +280,12 @@ int main(int argc, char *argv[]) // will uncomment later
 
 	#if !USE_AESD_CHAR_DEVICE
 	if (pthread_create(&thread_timestamp_0, NULL, timestamp_thread, (void*)&mutex) != 0) {
-	    syslog(LOG_ERR, "thread_timestamp...");
+	    syslog(LOG_ERR, "thread_timestamp create failed");
 	} else {
 	    pthread_detach(thread_timestamp_0);
 	}
 	#endif
+
 
 
 
@@ -412,11 +400,14 @@ int main(int argc, char *argv[]) // will uncomment later
 
 	pthread_mutex_destroy(&mutex);
     close(sockfd);
-    if (remove(DATA_FILE_PATH) == 0) {
-    	printf("File deleted successfully.\n");
-	} else {
-	    perror("Error deleting file");
-	}
+	#if !USE_AESD_CHAR_DEVICE
+	    if (remove(DATA_FILE_PATH) == 0) {
+	        printf("File deleted successfully.\n");
+	    } else {
+	        perror("Error deleting file");
+	    }
+	#endif
+
     return 0;
 
 
