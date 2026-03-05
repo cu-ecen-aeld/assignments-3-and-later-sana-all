@@ -20,12 +20,17 @@
 #define BUFFER_SIZE 1024
 // #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
 // #define DATA_FILE_PATH "/dev/aesdchar"
+/* Default to using the char device, but allow the build system to override. */
 #ifndef USE_AESD_CHAR_DEVICE
 #define USE_AESD_CHAR_DEVICE 1
+#endif
+
+#if USE_AESD_CHAR_DEVICE
 #define DATA_FILE_PATH "/dev/aesdchar"
 #else
 #define DATA_FILE_PATH "/var/tmp/aesdsocketdata"
 #endif
+
 
 
 volatile sig_atomic_t sig_quit = false;
@@ -61,6 +66,8 @@ struct thread_data {
 struct thread_node *head = NULL;
 struct thread_node *current = NULL;
 
+
+#if !USE_AESD_CHAR_DEVICE
 void *timestamp_thread(void *arg){
 
 	pthread_mutex_t* mtx = (pthread_mutex_t*)arg;
@@ -115,6 +122,8 @@ void *timestamp_thread(void *arg){
  
     return NULL;
 }
+#endif
+
 
 void *handle_client(void *arg){
 	struct thread_data *t_data = (struct thread_data *)arg;
@@ -282,12 +291,14 @@ int main(int argc, char *argv[]) // will uncomment later
     pthread_t thread_timestamp_0;
     // int data_fd;
 
+	#if !USE_AESD_CHAR_DEVICE
+	if (pthread_create(&thread_timestamp_0, NULL, timestamp_thread, (void*)&mutex) != 0) {
+	    syslog(LOG_ERR, "thread_timestamp...");
+	} else {
+	    pthread_detach(thread_timestamp_0);
+	}
+	#endif
 
-    if( pthread_create(&thread_timestamp_0, NULL, timestamp_thread, (void*)&mutex) != 0 ){
-    	syslog(LOG_ERR, "thread_timestamp...");
-    } else {
-    	pthread_detach(thread_timestamp_0);
-    }
 
 
     while( sig_quit == false )
