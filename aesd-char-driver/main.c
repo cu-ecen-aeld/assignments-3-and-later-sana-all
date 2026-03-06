@@ -22,6 +22,7 @@
 #include <linux/uaccess.h>
 #include "aesdchar.h"
 #include "aesd-circular-buffer.h"
+#include <linux/device.h>
 int aesd_major =   0; // use dynamic major
 int aesd_minor =   0;
 
@@ -29,6 +30,10 @@ MODULE_AUTHOR("Mcrey Fonacier"); /** TODO: fill in your name **/
 MODULE_LICENSE("Dual BSD/GPL");
 
 struct aesd_dev aesd_device;
+
+static struct class *aesd_class;
+static struct device *aesd_device_obj;
+
 
 int aesd_open(struct inode *inode, struct file *filp)
 {
@@ -101,7 +106,6 @@ ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
 ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
                 loff_t *f_pos)
 {
-	pr_info("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n");
     ssize_t retval = -ENOMEM;
     PDEBUG("write %zu bytes with offset %lld",count,*f_pos);
     /**
@@ -196,11 +200,10 @@ int aesd_init_module(void)
 {
     dev_t dev = 0;
     int result;
-    result = alloc_chrdev_region(&dev, aesd_minor, 1,
-            "aesdchar");
+    result = alloc_chrdev_region(&dev, aesd_minor, 1, "aesdchar");
     aesd_major = MAJOR(dev);
     if (result < 0) {
-        printk(KERN_WARNING "Can't get major %d\n", aesd_major);
+        pr_warn(KERN_WARNING "Can't get major %d\n", aesd_major);
         return result;
     }
     memset(&aesd_device,0,sizeof(struct aesd_dev));
@@ -215,20 +218,52 @@ int aesd_init_module(void)
 
     if( result ) {
         unregister_chrdev_region(dev, 1);
+        return result;
     }
-    return result;
+
+    aesd_class = class_create(THIS_MODULE, "aesd");
+    if (IS_ERR(aesd_class)){
+        pr_err("aesdchar: class_create failed\n");
+        cdev_del(&aesd_device.cdev);
+        unregister_chrdev_region(dev, 1);
+        return PTR_ERR(aesd_class);
+    }
+
+    aesd_device_obj = device_create(aesd_class, NULL, dev, NULL, "aesdchar");
+    if (IS_ERR(aesd_device_obj)) {
+        pr_err("aesdchar: device_create failed\n");
+        class_destroy(aesd_class);
+        cdev_del(&aesd_device.cdev);
+        unregister_chrdev_region(dev, 1);
+        return PTR_ERR(aesd_device_obj);
+    }
+
+    pr_info("aesdchar: registered device /dev/aesdchar major=%d\n", MAJOR(dev));
+    return 0;
 
 }
 
 void aesd_cleanup_module(void)
 {
     dev_t devno = MKDEV(aesd_major, aesd_minor);
+    if (aesd_device_obj) 
+        device_destroy(aesd_class, devno); 
+    if (aesd_class) 
+        class_destroy(aesd_class);
 
     cdev_del(&aesd_device.cdev);
 
     /**
      * TODO: cleanup AESD specific poritions here as necessary
      */
+
+    cdev_del(&aesd_device.cdev);
+    if(aesd_device.be.buffptr != NULL){
+        kfree(aesd_device.be.buffptr); 
+        aesd_device.be.buffptr = NULL; 
+        aesd_device.be.size = 0;
+    }
+
     int index;
     index = 0;
     struct aesd_buffer_entry *entry = NULL;
