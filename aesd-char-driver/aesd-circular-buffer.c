@@ -26,40 +26,41 @@
  * @return the struct aesd_buffer_entry structure representing the position described by char_offset, or
  * NULL if this position is not available in the buffer (not enough data is written).
  */
-struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(
-    struct aesd_circular_buffer *buffer,
-    size_t fpos,
-    size_t *entry_offset)
+struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct aesd_circular_buffer *buffer,
+            size_t char_offset, size_t *entry_offset_byte_rtn )
 {
-    size_t total_offset = fpos;
-    uint8_t index = buffer->out_offs;
-    uint8_t count = 0;
 
-    while (count < AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED) {
-        struct aesd_buffer_entry *entry = &buffer->entry[index];
+    /**
+    * TODO: implement per description
+    */
 
-        if (entry->buffptr == NULL) {
-            return NULL; // no valid entry
-        }
-
-        if (total_offset < entry->size) {
-            *entry_offset = total_offset;
-            return entry;
-        }
-
-        total_offset -= entry->size;
-        index = (index + 1) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
-        count++;
-
-        if (!buffer->full && index == buffer->in_offs) {
-            break; // reached end of valid entries
-        }
-    }
-
-    return NULL; // fpos beyond total data
+		
+	
+    	struct aesd_buffer_entry *e = NULL;
+    	size_t char_size = 0;
+    	int i; 
+	int count;
+    	for (i = buffer->out_offs, count = 0; count < AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED; i = (i+1) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED, count++){
+		if(i == buffer->in_offs && !buffer->full){ break; } // empty
+		
+		char_size+=buffer->entry[i].size;
+		
+		if (char_offset < char_size) { 
+			size_t temp0 = char_size - buffer->entry[i].size; 
+			size_t temp1 = char_offset - temp0; 
+			
+			*entry_offset_byte_rtn = temp1;
+			return &buffer->entry[i]; 
+		}
+		
+    	}
+    	
+    	
+    
+	return e;
+    
+    
 }
-
-
 
 /**
 * Adds entry @param add_entry to @param buffer in the location specified in buffer->in_offs.
