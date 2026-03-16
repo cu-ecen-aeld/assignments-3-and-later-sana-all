@@ -68,42 +68,38 @@ ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
      * TODO: handle read
      */
 
+    int rc = 0;
     struct aesd_dev *device = filp->private_data;
-    size_t offset = 0;
-    struct aesd_buffer_entry *entry;
-    int rc;
+
+
+
     rc = mutex_lock_interruptible(&device->mtx);
     if (rc != 0) { return rc; }
 
-    // struct aesd_buffer_entry *entry = NULL;
+    size_t offset = 0;
+    struct aesd_buffer_entry *entry = NULL;
+    entry = aesd_circular_buffer_find_entry_offset_for_fpos(&device->cb, *f_pos, &offset);
+    if (entry != NULL)
+    {
+        size_t characters = entry->size - offset;
+        if (characters > count) { characters = count; }
+        rc = copy_to_user(buf, entry->buffptr + offset, characters);
+        if (rc != 0)
+        {
+            mutex_unlock(&device->mtx);
+            return rc;
 
 
-    while ( count > 0 ) {
-        entry = aesd_circular_buffer_find_entry_offset_for_fpos(&device->cb, *f_pos, &offset);
-        if(!entry){
-            break;
+
         }
+        *f_pos += characters;
+        retval = characters;
 
 
 
 
 
-        size_t available = entry->size - offset;
-        size_t to_copy = (available > count) ? count : available;
-
-        if (copy_to_user(buf, entry->buffptr + offset, to_copy)){
-            retval = -EFAULT;
-            break;
-        }
-
-        buf += to_copy;
-        *f_pos += to_copy; 
-        retval += to_copy; 
-        count -= to_copy;
-
-        
     }
-
 
     mutex_unlock(&device->mtx);
 
