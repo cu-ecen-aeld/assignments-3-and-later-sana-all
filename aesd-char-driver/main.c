@@ -149,22 +149,25 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 
     device->be.size = characters;
 
-    if (device->be.buffptr[device->be.size - 1] == '\n') {
+    if (buffer[characters - 1] == '\n'){
         struct aesd_buffer_entry new_entry;
 
-        // Allocate a copy for the circular buffer
+
         new_entry.buffptr = device->be.buffptr;
         new_entry.size = device->be.size;
 
-        if (device->cb.full) {
-            kfree(device->cb.entry[device->cb.out_offs].buffptr);
-        }
-        aesd_circular_buffer_add_entry(&device->cb, &new_entry);
-        
-        printk(KERN_DEBUG "Committed entry: size=%zu, text=%.*s\n", new_entry.size, (int)new_entry.size, new_entry.buffptr);
 
-        // Reset be for next accumulation
-        device->be.buffptr = NULL;
+
+
+
+
+    if (device->cb.full) {
+        kfree(device->cb.entry[device->cb.out_offs].buffptr);
+    }
+    aesd_circular_buffer_add_entry(&device->cb, &new_entry);
+
+
+        device->be.buffptr = NULL; 
         device->be.size = 0;
     }
 
