@@ -150,14 +150,9 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
     device->be.size = characters;
 
     if (buffer[characters - 1] == '\n'){
-        struct aesd_buffer_entry new_entry;
-
-        new_entry.buffptr = device->be.buffptr;
-        new_entry.size = device->be.size;
-
 
         if(device->cb.full) {kfree(device->cb.entry[device->cb.in_offs].buffptr); }
-        aesd_circular_buffer_add_entry(&device->cb, &new_entry);
+        aesd_circular_buffer_add_entry(&device->cb, &device->be);
 
 
 
