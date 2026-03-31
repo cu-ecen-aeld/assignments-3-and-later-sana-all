@@ -109,7 +109,7 @@ static short int handle_client_parse_seekto(const char *line, struct aesd_seekto
 	const char *comma = strchr(line, ',');
 	const char *nl = strchr(line, '\n');
 
-	if( colon == NULL || comma == NULL || nl == null ) return -1;
+	if( colon == NULL || comma == NULL || nl == NULL ) return -1;
 
 	long x = strtol(colon + 1, &endptr, 10);
 
