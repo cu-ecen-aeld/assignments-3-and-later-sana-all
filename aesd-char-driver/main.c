@@ -43,7 +43,8 @@ int aesd_open(struct inode *inode, struct file *filp)
      * TODO: handle open
      */
 
-    struct cdev *cdev_ptr = inode->i_cdev;
+    struct cdev *cdev_ptr;
+    cdev_ptr = inode->i_cdev;
     //                 for conveniunce          end - start = address       address of aesd_dev + cdev like 0 + 64 gives the maximum meaning end
     struct aesd_dev *device = (struct aesd_dev *)((char *)cdev_ptr - offsetof(struct aesd_dev, cdev));
     filp->private_data = device;
@@ -69,7 +70,8 @@ ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
      * TODO: handle read
      */
 
-    int rc = 0;
+    int rc;
+    rc = 0;
     struct aesd_dev *device = filp->private_data;
 
 
@@ -77,7 +79,8 @@ ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
     rc = mutex_lock_interruptible(&device->mtx);
     if (rc != 0) { return rc; }
 
-    size_t offset = 0;
+    size_t offset;
+    offset = 0;
     struct aesd_buffer_entry *entry = NULL;
     entry = aesd_circular_buffer_find_entry_offset_for_fpos(&device->cb, *f_pos, &offset);
     if (entry != NULL)
@@ -118,7 +121,8 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
      */
 
     int rc;
-    struct aesd_dev *device = filp->private_data;
+    struct aesd_dev *device;
+    device = filp->private_data;
     size_t characters;
     char *buffer;
     rc = mutex_lock_interruptible(&device->mtx);

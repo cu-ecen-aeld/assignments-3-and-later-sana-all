@@ -109,7 +109,7 @@ static short int handle_client_parse_seekto(const char *line, struct aesd_seekto
 	const char *comma = strchr(line, ',');
 	const char *nl = strchr(line, '\n');
 
-	if( colon == NULL || comma == null || nl == null ) return -1;
+	if( colon == NULL || comma == NULL || nl == null ) return -1;
 
 	long x = strtol(colon + 1, &endptr, 10);
 
@@ -117,7 +117,7 @@ static short int handle_client_parse_seekto(const char *line, struct aesd_seekto
 
 	long y = strtol(comma + 1, &endptr, 10);
 
-	if( endptr != nl && *endptr != '/0' ) return -1;
+	if( endptr != nl && *endptr != '\0' ) return -1;
 	if( x < 0 || y < 0 ) return -1;
 	st->write_cmd = (uint32_t)x;
 	st->write_cmd_offset = (uint32_t)y;
