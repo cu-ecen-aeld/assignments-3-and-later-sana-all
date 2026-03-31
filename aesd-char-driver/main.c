@@ -23,7 +23,8 @@
 #include "aesdchar.h"
 #include "aesd-circular-buffer.h"
 #include <linux/device.h>
-int aesd_major =   0; // use dynamic major
+#include "aesd_ioctl.h"
+int aesd_major =   0; // use dynamic majorr
 int aesd_minor =   0;
 
 MODULE_AUTHOR("Mcrey Fonacier"); /** TODO: fill in your name **/
@@ -106,6 +107,7 @@ ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
     return retval;
 }
 
+
 ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
                 loff_t *f_pos)
 {
@@ -166,6 +168,118 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
     return retval;
 }
 
+loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
+{
+    struct aesd_dev *device;
+    loff_t fpos;
+    device = filp->private_data;
+    fpos = 0;
+    struct aesd_seekto st;
+
+    if( mutex_lock_interruptible(&device->mtx) != 0 ){
+        return -EINTR;
+    }
+
+    switch (whence){
+        case SEEK_SET: {
+        fpos = offset;
+        } break;
+        case SEEK_CUR: {
+            fpos = filp->f_pos + offset;
+        } break;
+        case SEEK_SET: {
+            size_t size = 0;
+            uint8_t indexes = device->cb.full ? AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED : (device->cb.in_offs - device->cb.out_offs) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+            for (uint8_t index = 0; index < indexes; index += 1){
+                size += device->cb.entry[(device->cb.out_offs + index) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED].size;
+            }
+            fpos = size + offset
+        } break;
+        default: {
+            return -SEEK_END;
+        } break;
+    }
+
+    if (fpos >= 0)
+    {
+        filp->f_pos = fpos;
+    }
+
+    mutex_unlock(&device->mtx);
+    return fpos;
+}
+
+long aesd_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg){
+    struct aesd_dev *device;
+    long fpos;
+    device = filp->private_data;
+    fpos = 0;
+    struct aesd_seekto st;
+
+    switch (cmd) {
+        case AESDCHAR_IOCSEEKTO: {
+            if( copy_from_user(&st, (const void __user *)arg, sizeof(struct aesd_seekto) ) != 0 ){
+                return -EFAULT;
+            }
+            if( mutex_lock_interruptible(&device->mtx) != 0 ){
+                return -EINTR;
+            }
+
+            uint8_t indexes;
+            if( device->cb.full ){
+                indexes = AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+            }
+            else{
+                indexes = (device->cb.in_offs - device->cb.out_offs) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+            }
+
+            if( st.write_cmd >= indexes ){
+                mutex_unlock(&device->mtx);
+                return -EINVAL;
+            }
+
+            uint8_t i;
+            uint8_t minuser;
+            uint8_t cur_out_offs;
+            uint8_t cur_in_offs;
+            minuser = 0;
+            cur_out_offs = device->cb.out_offs;
+            cur_in_offs = device->cb.in_offs;
+
+            for( i = 0; i < st.write_cmd; i+=1 ){
+
+                if( (i + cur_out_offs) >= st.write_cmd){
+                    cur_out_offs = 0;
+                    index = i;
+                }
+                fpos += device->cb.entry[i + cur_out_offs - (minuser)].size;
+            }
+
+            if( st.write_cmd_offset >= device->cb.entry[i].size ){
+                mutex_unlock(&device->mtx);
+                return -EINVAL;
+            }
+            fpos += st.write_cmd_offset;
+
+            // i dont know what the hell is this
+            filp->f_pos = fpos;
+
+
+
+            mutex_unlock(&device->mtx);
+
+
+        } break;
+        default: {
+            fpos = -ENOTTY;
+            return f_pos;
+        } break;
+    }
+
+
+    return fpos;
+}
+
 
 struct file_operations aesd_fops = {
     .owner =    THIS_MODULE,
@@ -173,6 +287,8 @@ struct file_operations aesd_fops = {
     .write =    aesd_write,
     .open =     aesd_open,
     .release =  aesd_release,
+    .llseek = aesd_llseek,
+    .unlocked_ioctl = aesd_unlocked_ioctl,
 };
 
 static int aesd_setup_cdev(struct aesd_dev *dev)
