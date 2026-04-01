@@ -149,7 +149,7 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 
     device->be.buffptr = buffer;
 
-    rc = copy_from_user(device->be.buffptr + device->be.size, buf, count);
+    rc = copy_from_user(device->be.buffptr + device->be.size, (const void __user *)buf, count);
 
     if( rc != 0 ) {
         kfree(buffer);
@@ -179,10 +179,10 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
 {
     struct aesd_dev *device;
+    struct aesd_seekto st;
     loff_t fpos;
     device = filp->private_data;
     fpos = 0;
-    struct aesd_seekto st;
 
     if( mutex_lock_interruptible(&device->mtx) != 0 ){
         return -EINTR;
@@ -195,7 +195,7 @@ loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
         case SEEK_CUR: {
             fpos = filp->f_pos + offset;
         } break;
-        case SEEK_SET: {
+        case SEEK_END: {
             size_t size = 0;
             uint8_t indexes = device->cb.full ? AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED : (device->cb.in_offs - device->cb.out_offs) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
             for (uint8_t index = 0; index < indexes; index += 1){
@@ -219,13 +219,18 @@ loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
 
 long aesd_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg){
     struct aesd_dev *device;
+    struct aesd_seekto st;
     long fpos;
     device = filp->private_data;
     fpos = 0;
-    struct aesd_seekto st;
 
     switch (cmd) {
         case AESDCHAR_IOCSEEKTO: {
+            uint8_t indexes;
+            uint8_t i;
+            uint8_t minuser;
+            uint8_t cur_out_offs;
+            uint8_t cur_in_offs;
             if( copy_from_user(&st, (const void __user *)arg, sizeof(struct aesd_seekto) ) != 0 ){
                 return -EFAULT;
             }
@@ -233,7 +238,6 @@ long aesd_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
                 return -EINTR;
             }
 
-            uint8_t indexes;
             if( device->cb.full ){
                 indexes = AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
             }
@@ -246,10 +250,7 @@ long aesd_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
                 return -EINVAL;
             }
 
-            uint8_t i;
-            uint8_t minuser;
-            uint8_t cur_out_offs;
-            uint8_t cur_in_offs;
+
             minuser = 0;
             cur_out_offs = device->cb.out_offs;
             cur_in_offs = device->cb.in_offs;
@@ -258,7 +259,7 @@ long aesd_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
                 if( (i + cur_out_offs) >= st.write_cmd){
                     cur_out_offs = 0;
-                    index = i;
+                    indexes = i;
                 }
                 fpos += device->cb.entry[i + cur_out_offs - (minuser)].size;
             }
@@ -280,7 +281,7 @@ long aesd_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
         } break;
         default: {
             fpos = -ENOTTY;
-            return f_pos;
+            return fpos;
         } break;
     }
 
@@ -364,6 +365,8 @@ int aesd_init_module(void)
 
 void aesd_cleanup_module(void)
 {
+    int index;
+    struct aesd_buffer_entry *entry;
     dev_t devno = MKDEV(aesd_major, aesd_minor);
     if (aesd_device_obj) 
         device_destroy(aesd_class, devno); 
@@ -383,9 +386,8 @@ void aesd_cleanup_module(void)
         aesd_device.be.size = 0;
     }
 
-    int index;
     index = 0;
-    struct aesd_buffer_entry *entry = NULL;
+    entry = NULL;
     AESD_CIRCULAR_BUFFER_FOREACH(entry, &aesd_device.cb, index)
     {
         if(entry->buffptr != NULL){
