@@ -195,7 +195,7 @@ loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
             fpos = filp->f_pos + offset;
         } break;
         case SEEK_END: {
-            uint8_t index
+            uint8_t index;
             size_t size = 0;
             uint8_t indexes = device->cb.full ? AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED : (device->cb.in_offs - device->cb.out_offs) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
             
