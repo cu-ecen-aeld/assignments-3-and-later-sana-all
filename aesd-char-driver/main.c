@@ -38,15 +38,16 @@ static struct device *aesd_device_obj;
 
 int aesd_open(struct inode *inode, struct file *filp)
 {
+    struct cdev *cdev_ptr;
+    struct aesd_dev *device;
     PDEBUG("open");
     /**
      * TODO: handle open
      */
 
-    struct cdev *cdev_ptr;
     cdev_ptr = inode->i_cdev;
     //                 for conveniunce          end - start = address       address of aesd_dev + cdev like 0 + 64 gives the maximum meaning end
-    struct aesd_dev *device = (struct aesd_dev *)((char *)cdev_ptr - offsetof(struct aesd_dev, cdev));
+    device = (struct aesd_dev *)((char *)cdev_ptr - offsetof(struct aesd_dev, cdev));
     filp->private_data = device;
 
     return 0;
@@ -64,24 +65,26 @@ int aesd_release(struct inode *inode, struct file *filp)
 ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
                 loff_t *f_pos)
 {
+    int rc;
+    struct aesd_dev *device;
+    size_t offset;
+    struct aesd_buffer_entry *entry;
     ssize_t retval = 0;
     PDEBUG("read %zu bytes with offset %lld",count,*f_pos);
     /**
      * TODO: handle read
      */
 
-    int rc;
     rc = 0;
-    struct aesd_dev *device = filp->private_data;
+    device = filp->private_data;
 
 
 
     rc = mutex_lock_interruptible(&device->mtx);
     if (rc != 0) { return rc; }
 
-    size_t offset;
     offset = 0;
-    struct aesd_buffer_entry *entry = NULL;
+    entry = NULL;
     entry = aesd_circular_buffer_find_entry_offset_for_fpos(&device->cb, *f_pos, &offset);
     if (entry != NULL)
     {
@@ -113,18 +116,19 @@ ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
 
 ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
                 loff_t *f_pos)
-{
+{    
+    int rc;
+    struct aesd_dev *device;
+    size_t characters;
+    char *buffer;
     ssize_t retval = -ENOMEM;
     PDEBUG("write %zu bytes with offset %lld",count,*f_pos);
     /**
      * TODO: handle write
      */
 
-    int rc;
-    struct aesd_dev *device;
+
     device = filp->private_data;
-    size_t characters;
-    char *buffer;
     rc = mutex_lock_interruptible(&device->mtx);
     if(rc != 0){return -EFAULT;}
 
@@ -197,7 +201,7 @@ loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
             for (uint8_t index = 0; index < indexes; index += 1){
                 size += device->cb.entry[(device->cb.out_offs + index) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED].size;
             }
-            fpos = size + offset
+            fpos = size + offset;
         } break;
         default: {
             return -SEEK_END;
