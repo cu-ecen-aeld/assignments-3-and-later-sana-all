@@ -179,7 +179,6 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
 {
     struct aesd_dev *device;
-    struct aesd_seekto st;
     loff_t fpos;
     device = filp->private_data;
     fpos = 0;
@@ -196,9 +195,11 @@ loff_t aesd_llseek(struct file *filp, loff_t offset, int whence)
             fpos = filp->f_pos + offset;
         } break;
         case SEEK_END: {
+            uint8_t index
             size_t size = 0;
             uint8_t indexes = device->cb.full ? AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED : (device->cb.in_offs - device->cb.out_offs) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
-            for (uint8_t index = 0; index < indexes; index += 1){
+            
+            for ( index = 0; index < indexes; index += 1){
                 size += device->cb.entry[(device->cb.out_offs + index) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED].size;
             }
             fpos = size + offset;
