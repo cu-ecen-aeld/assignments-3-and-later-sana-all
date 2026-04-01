@@ -149,7 +149,7 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 
     device->be.buffptr = buffer;
 
-    rc = copy_from_user(device->be.buffptr + device->be.size, (const void __user *)buf, count);
+    rc = copy_from_user((void *)(device->be.buffptr + device->be.size), (const void __user *)buf, count);
 
     if( rc != 0 ) {
         kfree(buffer);
