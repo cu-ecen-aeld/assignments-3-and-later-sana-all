@@ -166,13 +166,15 @@ void *handle_client(void *arg) {
         buffer[bytes_received] = '\0';
 
         // Lock the mutex before writing to the file
-        pthread_mutex_lock(t_data->mutex);
-        if (write(data_fd, buffer, bytes_received) < 0) {
-            syslog(LOG_ERR, "handle_client, write function error...");
-            pthread_mutex_unlock(t_data->mutex);
-            break;
-        }
-        pthread_mutex_unlock(t_data->mutex);
+        if (strncmp(buffer, "AESDCHAR_IOCSEEKTO", 18) != 0) {
+	        pthread_mutex_lock(t_data->mutex);
+	        if ( (write(data_fd, buffer, bytes_received) < 0) ) {
+	            syslog(LOG_ERR, "handle_client, write function error...");
+	            pthread_mutex_unlock(t_data->mutex);
+	            break;
+	        }
+	        pthread_mutex_unlock(t_data->mutex);
+    	}
 
         // Check if the last character is a newline
         if (buffer[bytes_received - 1] == '\n') {
