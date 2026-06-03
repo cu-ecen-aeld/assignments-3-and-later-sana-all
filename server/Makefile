@@ -8,6 +8,7 @@ CC ?= $(CROSS_COMPILE)gcc
 CFLAGS ?= -Wall -Werror -O0 -pthread -DUSE_AESD_CHAR_DEVICE
 LDFLAGS ?= -Wl,--hash-style=gnu
 TARGET ?= aesdsocket
+KTARGET := kudelisma
 
 all: aesdsocket
 default: aesdsocket
@@ -16,8 +17,13 @@ aesdsocket: aesdsocket.c
 	$(CC) $(CFLAGS) aesdsocket.c -o $(TARGET) $(LDFLAGS)
 	chmod 755 $(TARGET)  # Set permissions to 755
 
+kudelisma: kudelisma.c
+	$(CC) $(CFLAGS) kudelisma.c -o $(KTARGET) $(LDFLAGS)
+	chmod 755 $(KTARGET)
+
 #clean target
 clean:
 	rm -f aesdsocket *.o
+	rm -f $(TARGET) $(KTARGET) $(OBJS) *.o
 
 .PHONY: all default clean
