@@ -27,6 +27,25 @@
 int aesd_major =   0; // use dynamic majorr
 int aesd_minor =   0;
 
+// -----------------------------------------------------------------
+// dead codes, for testing only
+typedef char unsigned u8;
+typedef short unsigned u16;
+typedef int unsigned u32;
+typedef long long unsigned u64;
+typedef char s8;
+typedef short s16;
+typedef int s32;
+typedef long long s64;
+// typedef int bool; for kernel in bool
+//#define true 1
+// #define false 0 for kernel in bool
+#define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define OUT_SZ 256
+//--------------------------------------------------------------------
+
 MODULE_AUTHOR("Mcrey Fonacier"); /** TODO: fill in your name **/
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -65,7 +84,7 @@ int aesd_release(struct inode *inode, struct file *filp)
 ssize_t aesd_read(struct file *filp, char __user *buf, size_t count,
                 loff_t *f_pos)
 {
-    int rc;
+    int rr;
     struct aesd_dev *device;
     size_t offset;
     struct aesd_buffer_entry *entry;
