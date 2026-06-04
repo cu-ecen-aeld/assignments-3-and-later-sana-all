@@ -29,13 +29,18 @@
 // start-----------------------------------------------------------------
 // dead codes, for testing only
 #ifdef __KERNEL__
-#include <linux/string.h>
+/* Kernel build */
+#include <linux/kernel.h>    /* printk, min/max */
+#include <linux/string.h>    /* kernel string helpers */
+#include <linux/fcntl.h>     /* O_* flags for kernel space if needed */
 #else
-#include <string.h>
-#endif
-#include <fcntl.h>
+/* Userspace build */
+#include <stdio.h>
 #include <stdint.h>
-#include <linux/kernel.h>
+#include <stdbool.h>
+#include <string.h>
+#include <fcntl.h>
+#endif
 //end--------------------------------------------------------------------
 
 
