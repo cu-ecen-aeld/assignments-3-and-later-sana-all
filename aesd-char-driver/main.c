@@ -40,6 +40,14 @@
 #include <stdbool.h>
 #include <string.h>
 #include <fcntl.h>
+typedef char unsigned u8;
+typedef short unsigned u16;
+typedef int unsigned u32;
+typedef long long unsigned u64;
+typedef char s8;
+typedef short s16;
+typedef int s32;
+typedef long long s64;
 #endif
 //end--------------------------------------------------------------------
 
@@ -49,14 +57,7 @@ int aesd_minor =   0;
 
 // start-----------------------------------------------------------------
 // dead codes, for testing only
-typedef char unsigned u8;
-typedef short unsigned u16;
-typedef int unsigned u32;
-typedef long long unsigned u64;
-typedef char s8;
-typedef short s16;
-typedef int s32;
-typedef long long s64;
+
 // typedef int bool; for kernel in bool
 //#define true 1
 // #define false 0 for kernel in bool
@@ -66,58 +67,6 @@ typedef long long s64;
 #define OUT_SZ 256
 // end--------------------------------------------------------------------
 
-
-// start-----------------------------------------------------------------
-// dead codes, for testing only
-
-
-enum MnemonicId {
-    MN_UNDEF = 0,
-    MN_MOV,
-    MN_ADD,
-    MN_SUB,
-    MN_CMP,
-    MN_JNE,
-    MN_COUNT
-};
-
-enum data_transfer_type_num {
-    rm_tf_fr = 0,
-    i_t_rm = 1,
-    i_t_r = 2,
-    m_t_a = 3,
-    a_t_m = 4
-};
-
-static const char *mnemonic_names[MN_COUNT] = {
-     "UNDEF", "mov", "add", "sub", "cmp", "jne"
-};
-static u8 mnemonic_index[256];
-
-void init_table(void){
-    int i;
-    for (i = 0; i < 256; ++i){
-        mnemonic_index[i] = MN_UNDEF;
-    }
-    mnemonic_index[0b10001000] = 1;
-    mnemonic_index[0b10110000] = 1;
-    mnemonic_index[0b11000110] = 1;
-    mnemonic_index[0b10100000] = 1;
-    mnemonic_index[0b10100010] = 1;
-    mnemonic_index[0] = 2;
-    mnemonic_index[0b10000000] = 2;
-    mnemonic_index[0b00000100] = 2;
-    mnemonic_index[0b00101000] = 3;
-    mnemonic_index[0b00101100] = 3;
-    mnemonic_index[0b00101100] = 3;
-    mnemonic_index[0b00111000] = 4;
-    mnemonic_index[0b00111100] = 4;
-    mnemonic_index[0b01110101] = 5;
-    //mnemonic_index[0b00111100] = 4;
-}
-
-
-// end--------------------------------------------------------------------
 
 
 MODULE_AUTHOR("Mcrey Fonacier"); /** TODO: fill in your name **/
@@ -224,17 +173,7 @@ umap nem[] = {
     {0b01110101, "jne"}
 };
 
-//umap reg_w[] = {
-//    {0b000, "ax"},
-//    {0b001, "cx"},
-//    {0b010, "dx"},
-//    {0b011, "bx"},
-//    // _________________ space for readability
-//    {0b100, "sp"},
-//    {0b101, "bp"},
-//    {0b110, "si"},
-//    {0b111, "di"},
-//};
+
 
 static const char *reg_w[9] = {
     "ax", "cx", "dx", "bx", "sp", "bp", "si", "di", ""
@@ -249,37 +188,7 @@ static const char *rm_00[9] = {
     "bx + si", "bx + di", "bp + si", "bp + di", "si", "di", "bp", "bx", ""
 };
 
-//static const char *rm_01[8] = {
-//    "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"
-//};
-//
-//static const char *rm_10[8] = {
-//    "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"
-//};
 
-//umap reg_nw[] = {
-//    {0b000, "al"},
-//    {0b001, "cl"},
-//    {0b010, "dl"},
-//    {0b011, "bl"},
-//    // _________________ space for readability
-//    {0b100, "ah"},
-//    {0b101, "ch"},
-//    {0b110, "dh"},
-//    {0b111, "bh"},
-//};
-
-//umap rm[] = {
-//    {0b000, "bx + si"},
-//    {0b001, "bx + di"},
-//    {0b010, "bp + si"},
-//    {0b011, "bp + di"},
-//    // _________________ space for readability
-//    {0b100, "si"},
-//    {0b101, "di"},
-//    {0b110, "bp"}, // if mod == 00 it is direct address
-//    {0b111, "bx"},
-//};
 
 static const char *rm[8] = {
     "bx + si", /* 0 */
