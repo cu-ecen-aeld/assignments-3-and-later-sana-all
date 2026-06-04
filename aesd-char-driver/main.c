@@ -56,8 +56,8 @@ typedef long long s64;
 //#define true 1
 // #define false 0 for kernel in bool
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#define max(a,b) (((a) > (b)) ? (a) : (b))
+// #define min(a,b) (((a) < (b)) ? (a) : (b))
+// #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define OUT_SZ 256
 // end--------------------------------------------------------------------
 
