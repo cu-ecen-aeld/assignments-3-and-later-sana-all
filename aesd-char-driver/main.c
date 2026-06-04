@@ -201,6 +201,310 @@ static const char *rm[8] = {
     "bx"       /* 7 */
 };
 
+void printBinary(unsigned char num) {
+    printf("0b");
+    for (int i = 7; i >= 0; i--) {
+        u8 mask = 1 << i;
+        printf("%c", (num & mask) ? '1' : '0');
+    }
+    printf(", ");
+    //printf("\n");
+}
+
+void copy_string(char *dest, const char *src, size_t max_len) {
+    int i = 0;
+    while (src[i] != '\0' && i < (int)max_len - 1) {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0'; // null terminate
+}
+
+
+static void right_encoder(lmi_form myForm, u8 champiArray[], u8 counter[], char* out){
+
+    // R/M field encoding. since we will call string writer/
+    lmi_form_right myForm_right;
+
+    u16 index = (u16)counter[0];
+    u8 input2;
+    u8 input_mod;
+    u8 input_reg;
+    u8 input_rm;
+    char s_reg[16];
+    char s_rm[16];
+
+
+    bool direct_address = false;
+    myForm_right.s_reg = s_reg;
+    myForm_right.s_rm = s_rm;
+    myForm_right.sw = false;
+
+
+
+    if(myForm.data_transfer_type == rm_tf_fr){
+        input2 = champiArray[index + 1];
+        input_mod = (0b11000000 & input2) >> 6; // not yet implemented
+        input_reg = (0b00111000 & input2) >> 3;
+        input_rm = (0b00000111 & input2);
+        if(input_mod == 0){
+            // for direct address
+            if(input_rm == 6){
+                myForm.displacement = false;
+                myForm.data_avail = true;
+                input_mod = 7;
+                direct_address = true;
+            }else{
+                myForm.displacement = false;
+                myForm_right.disp_data = 0;
+            }
+        }
+    }
+    else if(myForm.data_transfer_type == i_t_rm){
+        input2 = champiArray[index+1];
+        input_mod = (0b11000000 & input2) >> 6;
+        input_reg = 8;
+        input_rm = champiArray[index + 1] & 0b00000111;
+        if(input_mod == 0 || input_mod == 3){
+            myForm.displacement = false;
+            myForm_right.disp_data = 0;
+        }
+        if(myForm.has_add == true){
+
+            if(myForm.destination == 0 && myForm.wide == 1){
+                myForm_right.sw = true;
+            }
+
+        }
+
+    }
+    else if(myForm.data_transfer_type == i_t_r){
+        input2 = champiArray[index];
+        input_mod = 6;
+        input_reg = champiArray[index] & 0b00000111;
+        myForm_right.bracket = false;
+    }
+    else if(myForm.data_transfer_type == m_t_a){
+        input_mod = 6;
+        input_reg = 0;
+        if(myForm.has_add){
+            myForm_right.bracket = false;
+        }else{
+            myForm_right.bracket = true;
+        }
+        myForm.data_transfer_type = i_t_r;
+    }
+    else if(myForm.data_transfer_type == a_t_m){
+        input_mod = 6;
+        input_reg = 0;
+        if(myForm.has_add){
+            myForm_right.bracket = false;
+        }else{
+            myForm_right.bracket = true;
+        }
+        myForm.data_transfer_type = i_t_r;
+    }
+    else{
+        return;
+    }
+
+
+    switch(input_mod) {
+        case 0b11: {
+            if(myForm.wide){
+                copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
+                copy_string(myForm_right.s_rm, reg_w[input_rm] ,sizeof(myForm_right.s_rm));
+            }else{
+                copy_string(myForm_right.s_reg, reg_nw[input_reg] ,sizeof(myForm_right.s_reg));
+                copy_string(myForm_right.s_rm, reg_nw[input_rm] ,sizeof(myForm_right.s_rm));
+            }
+            myForm_right.disp_data = 0;
+            myForm_right.bracket = false;
+
+            if(myForm.data_avail == true){
+                if(myForm.destination == false && myForm.wide == true){
+                    myForm_right.data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+                    counter[0]+=2;
+                }else{
+                    myForm_right.data = champiArray[index + 2];
+                    counter[0]+=1;
+                }
+            }
+
+            writer_overall(myForm, myForm_right, out, s_reg, s_rm);
+
+
+        } break;
+        case 0b10: {
+
+            if( myForm.wide ){
+                copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
+                copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+            }else {
+                copy_string(myForm_right.s_reg, reg_nw[input_reg] ,sizeof(myForm_right.s_reg));
+                copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+            }
+
+            u8 adder = index;
+
+            if(myForm.data_avail == true){
+                myForm_right.disp_data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+                if( myForm.wide ){
+                    myForm_right.data = (champiArray[index + 5] << 8) ^ champiArray[index + 4];
+                    counter[0]+=2; // for data
+                }else{
+                    myForm_right.data = champiArray[index + 4];
+                    counter[0]+=1; // for data
+                }
+            }else{
+                myForm_right.disp_data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+            }
+            counter[0]+=2; // this is for displacement
+
+            // myForm_right.data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+            myForm_right.bracket = true;
+            writer_overall(myForm, myForm_right, out);
+
+        } break;
+        case 0b01: {
+            if( myForm.wide ){
+                copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
+                copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+                // printf("YAYAKAPIN: %s\n", s_reg);
+            }else {
+                copy_string(myForm_right.s_reg, reg_nw[input_reg] ,sizeof(myForm_right.s_reg));
+                copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+            }
+
+            u8 adder = index + 1;
+
+            if(myForm.displacement == true){
+                adder+=1;
+                myForm_right.disp_data = champiArray[adder];
+                // myForm_right.disp_data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+                counter[0]+=1;
+            }
+
+
+
+            if(myForm.data_avail == true){
+                if(myForm.wide){
+                    adder+=2;
+                    myForm_right.data = (champiArray[adder] << 8) ^ champiArray[adder-1];
+                }else{
+                    adder += 1;
+                    myForm_right.data = champiArray[adder];
+                }
+            }
+            // myForm_right.data = champiArray[index + 2];
+            myForm_right.bracket = true;
+            writer_overall(myForm, myForm_right, out);
+            // champiArray[index + 2] is u8 and the function called is u16 may cause problem later
+        } break;
+        case 0: {
+            u8 adder = index + 1;
+            if( myForm.wide ){
+                if(myForm.has_add && input_rm == 0b110){
+                    // char stringified_numeric_disp_data[20];
+                    u16 foo = (champiArray[adder + 2] << 8) ^ champiArray[adder + 1];
+                    adder+=2;
+                    copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
+                    snprintf(myForm_right.s_rm, sizeof(myForm_right.s_rm), "%d", foo);
+                    counter[0]+=2;
+
+                }else{
+                    copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
+                    copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+                }
+                // printf("YAYAKAPIN: %s\n", s_reg);
+            }else {
+                if(myForm.has_add && input_rm == 0b110){
+                    u16 foo = champiArray[adder + 1];
+                    adder+=1;
+                    copy_string(myForm_right.s_reg, reg_nw[input_reg] ,sizeof(myForm_right.s_reg));
+                    snprintf(myForm_right.s_rm, sizeof(myForm_right.s_rm), "%d", foo);
+                    counter[0]+=1;
+                }else{
+                    copy_string(myForm_right.s_reg, reg_nw[input_reg] ,sizeof(myForm_right.s_reg));
+                    copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+                }
+
+            }
+
+            if(myForm.data_avail == true){
+                if(myForm.has_add){
+                    if(myForm_right.sw){
+                        myForm_right.data = (champiArray[adder + 2] << 8) ^ champiArray[adder + 1];
+                        counter[0]+=2; // for data
+                        adder+=2;
+                    }else{
+                        myForm_right.data = champiArray[adder + 1];
+                        counter[0]+=1; // for data
+                        adder+=1;
+                    }
+                }else{
+                    if( myForm.wide ){
+                        myForm_right.data = (champiArray[adder + 2] << 8) ^ champiArray[adder + 1];
+                        counter[0]+=2; // for data
+                        adder+=2;
+                    }else{
+                        myForm_right.data = champiArray[adder + 1];
+                        counter[0]+=1; // for data
+                        adder+=1;
+                    }
+                }
+
+            }
+            myForm_right.bracket = true;
+            writer_overall(myForm, myForm_right, out);
+        } break;
+        case 5: {
+            if( myForm.wide ){
+                copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+                myForm_right.data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+                counter[0]+=2;
+            }else {
+                copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
+                myForm_right.data = champiArray[index + 2];
+                counter[0]+=1;
+            }
+            myForm_right.bracket = true;
+            writer_overall(myForm, myForm_right, out);
+        } break;
+        case 6: {
+            if( myForm.wide ){
+                copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
+                myForm_right.data = (champiArray[index + 2] << 8) ^ champiArray[index + 1];
+                counter[0]+=1;
+            }else {
+                copy_string(myForm_right.s_reg, reg_nw[input_reg] ,sizeof(myForm_right.s_reg));
+                myForm_right.data = champiArray[index + 1];
+            }
+            // myForm_right.bracket = false;
+            writer_overall(myForm, myForm_right, out);
+        } break;
+        case 7: {
+            if( myForm.wide ){
+                copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
+                // myForm_right.data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+            }else {
+                copy_string(myForm_right.s_reg, reg_nw[input_reg] ,sizeof(myForm_right.s_reg));
+                // myForm_right.data = champiArray[index + 2];
+            }
+            myForm_right.data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
+            myForm_right.bracket = true;
+            myForm.data_transfer_type = i_t_r;
+            writer_overall(myForm, myForm_right, out);
+            counter[0]+=2;
+        } break;
+        default: {
+            return;
+        } break;
+
+    };
+
+}
+
 // end--------------------------------------------------------------------
 
 struct aesd_dev aesd_device;
