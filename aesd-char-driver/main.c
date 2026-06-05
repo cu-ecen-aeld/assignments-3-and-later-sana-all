@@ -204,8 +204,9 @@ static const char *rm[8] = {
 void printBinary(unsigned char num) {
     // printf("0b");
     int i;
+    u8 mask;
     for (i = 7; i >= 0; i--) {
-        u8 mask = 1 << i;
+        mask = 1 << i;
         // printf("%c", (num & mask) ? '1' : '0');
     }
     // printf(", ");
@@ -510,6 +511,183 @@ static void right_encoder(lmi_form myForm, u8 champiArray[], u8 counter[], char*
     };
 
 }
+
+
+void writer_overall(lmi_form myForm, lmi_form_right myForm_right, char *out){
+    // bits have 4 choices, 3 for ins to ins, 2 for 16 bits, 1 for 8 bits, 0 for no integer
+    // if(myForm_right.data == 0){ myForm_right.bracket = false; }
+
+
+    char stringified_numeric_data[20];
+    char stringified_numeric_disp_data[20];
+
+    if(myForm.displacement){
+        snprintf(stringified_numeric_disp_data, sizeof(stringified_numeric_disp_data), "%d", myForm_right.disp_data);
+    }else{
+        snprintf(stringified_numeric_disp_data, sizeof(stringified_numeric_disp_data), "%d", 0);
+    }
+
+    if(myForm.data_avail){
+        snprintf(stringified_numeric_data, sizeof(stringified_numeric_data), "%d", myForm_right.data);
+    }else{
+        snprintf(stringified_numeric_data, sizeof(stringified_numeric_data), "%d", 0);
+    }
+
+    // printf("GAGOBI: %s\n", stringified_numeric_data);
+
+    out[0] = '\0';
+    size_t rem;
+
+    // mnemonic
+    rem = OUT_SZ - strlen(out) - 1;
+    strncat(out, myForm.mnemonic, rem);
+
+    // space
+    rem = OUT_SZ - strlen(out) - 1;
+    strncat(out, " ", rem);
+
+    if(myForm.data_transfer_type == i_t_r){
+
+        if(myForm.destination == 1){
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, myForm_right.s_reg, rem);
+            rem = OUT_SZ  - strlen(out) - 1;
+            if( myForm_right.bracket ){
+                strncat(out, ", [", rem);
+            }else{
+                strncat(out, ", ", rem);
+            }
+
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, stringified_numeric_data, rem);
+            rem = OUT_SZ  - strlen(out) - 1;
+            if( myForm_right.bracket ){
+                strncat(out, "]", rem);
+            }
+        }
+        else{
+            rem = OUT_SZ  - strlen(out) - 1;
+            if( myForm_right.bracket ){
+                strncat(out, "[", rem);
+            }
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, stringified_numeric_data, rem);
+            if( myForm_right.bracket ){
+                strncat(out, "], ", rem);
+            }else{
+                strncat(out, ", ", rem);
+            }
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, myForm_right.s_reg, rem);
+        }
+
+
+        return;
+    }
+    else if(myForm.data_transfer_type == i_t_rm){
+        if(myForm_right.bracket == true){
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, "[", rem);
+        }
+
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, myForm_right.s_rm, rem);
+
+        if(myForm_right.disp_data != 0){
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, " + ", rem);
+
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, stringified_numeric_disp_data, rem);
+        }
+
+        if(myForm_right.bracket == true){
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, "]", rem);
+        }
+
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, ", ", rem);
+
+        rem = OUT_SZ  - strlen(out) - 1;
+
+        if(myForm_right.bracket == true){
+            if(myForm.wide){
+                strncat(out, "word ", rem);
+            }else{
+                strncat(out, "byte ", rem);
+            }
+        }
+
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, stringified_numeric_data, rem);
+        return;
+    }
+
+    if(myForm.destination){
+
+        // first operand
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, myForm_right.s_reg, rem);
+
+        // comma+space
+        rem = OUT_SZ  - strlen(out) - 1;
+        if( myForm_right.bracket ){
+            strncat(out, ", [", rem);
+        }else{
+
+        }
+
+
+        //  second operand
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, myForm_right.s_rm, rem);
+
+        if(myForm_right.bracket){
+            if(myForm_right.disp_data != 0){
+                rem = OUT_SZ  - strlen(out) - 1;
+                strncat(out, " + ", rem);
+                rem = OUT_SZ  - strlen(out) - 1;
+                strncat(out, stringified_numeric_disp_data, rem);
+            }
+
+            rem = OUT_SZ  - strlen(out) - 1;
+            strncat(out, "]", rem);
+        }
+
+        return;
+
+    }else{
+        if( myForm_right.bracket ){
+            strncat(out, "[", rem);
+        }
+        // first operand
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, myForm_right.s_rm, rem);
+
+        if( myForm_right.bracket ){
+            if(myForm_right.disp_data != 0){
+                rem = OUT_SZ  - strlen(out) - 1;
+                strncat(out, " + ", rem);
+                rem = OUT_SZ  - strlen(out) - 1;
+                strncat(out, stringified_numeric_disp_data, rem);
+            }
+            strncat(out, "]", rem);
+        }
+
+        // comma+space
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, ", ", rem);
+
+        //  second operand
+        rem = OUT_SZ  - strlen(out) - 1;
+        strncat(out, myForm_right.s_reg, rem);
+
+
+        return;
+    }
+}
+
 
 // end--------------------------------------------------------------------
 
