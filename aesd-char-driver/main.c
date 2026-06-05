@@ -202,12 +202,13 @@ static const char *rm[8] = {
 };
 
 void printBinary(unsigned char num) {
-    printf("0b");
-    for (int i = 7; i >= 0; i--) {
+    // printf("0b");
+    int i;
+    for (i = 7; i >= 0; i--) {
         u8 mask = 1 << i;
-        printf("%c", (num & mask) ? '1' : '0');
+        // printf("%c", (num & mask) ? '1' : '0');
     }
-    printf(", ");
+    // printf(", ");
     //printf("\n");
 }
 
@@ -337,6 +338,8 @@ static void right_encoder(lmi_form myForm, u8 champiArray[], u8 counter[], char*
         } break;
         case 0b10: {
 
+            u8 adder;
+
             if( myForm.wide ){
                 copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
                 copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
@@ -345,7 +348,7 @@ static void right_encoder(lmi_form myForm, u8 champiArray[], u8 counter[], char*
                 copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
             }
 
-            u8 adder = index;
+            adder = index;
 
             if(myForm.data_avail == true){
                 myForm_right.disp_data = (champiArray[index + 3] << 8) ^ champiArray[index + 2];
@@ -367,6 +370,9 @@ static void right_encoder(lmi_form myForm, u8 champiArray[], u8 counter[], char*
 
         } break;
         case 0b01: {
+
+            u8 adder;
+
             if( myForm.wide ){
                 copy_string(myForm_right.s_reg, reg_w[input_reg] ,sizeof(myForm_right.s_reg));
                 copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
@@ -376,7 +382,7 @@ static void right_encoder(lmi_form myForm, u8 champiArray[], u8 counter[], char*
                 copy_string(myForm_right.s_rm, rm_00[input_rm] ,sizeof(myForm_right.s_rm));
             }
 
-            u8 adder = index + 1;
+            adder = index + 1;
 
             if(myForm.displacement == true){
                 adder+=1;
