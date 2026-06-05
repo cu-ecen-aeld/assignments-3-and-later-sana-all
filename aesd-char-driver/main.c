@@ -24,6 +24,7 @@
 #include "aesd-circular-buffer.h"
 #include <linux/device.h>
 #include "aesd_ioctl.h"
+#include "kudelisma_writer.h"
 
 
 // start-----------------------------------------------------------------
