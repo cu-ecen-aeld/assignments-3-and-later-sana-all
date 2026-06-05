@@ -689,6 +689,204 @@ void writer_overall(lmi_form myForm, lmi_form_right myForm_right, char *out){
 }
 
 
+
+
+void left_and_right_encoding(u8 champiArray[], u8 counter[], char* out){
+    u16 index = (u16)counter[0];
+    u8 input = 0 + champiArray[index];
+
+    for (int i = 0; i < 8; ++i) {
+        // MN_UNDEF
+        if(mnemonic_index[input] != MN_UNDEF) { // if shit is not equal to zero it exists. otherwise tapyas pa
+            break;
+        }
+        // printf("mnemonic_index: %d\n", input);
+
+        input = input >> (i + 1);
+        input = input << (i + 1);
+    }
+
+    char *cur_nem = mnemonic_names[mnemonic_index[input]];
+    lmi_form myForm;
+    myForm.has_add = false;
+
+    switch(input){
+        case 0:
+        case 0b00101000:
+        case 0b00111000:
+        case 0b10001000:  {
+            // left encoding
+            bool destination = (0b00000010 & champiArray[index]) << 1;
+            bool wide = (0b00000001 & champiArray[index]);
+
+            myForm.destination = (0b00000010 & champiArray[index]) << 1;
+            myForm.wide = (0b00000001 & champiArray[index]);
+            myForm.mnemonic = mnemonic_names[mnemonic_index[input]];
+            myForm.data_transfer_type = rm_tf_fr;
+            myForm.displacement = true;
+            myForm.data_avail = false;
+
+            char s_reg[256];
+            char s_rm[256];
+
+
+            right_encoder(myForm, champiArray, counter, out);
+
+            return;
+        } break;
+
+
+        case 0b11000110: { // immediate to register memory
+            myForm.wide = (champiArray[index] & 0b00000001);
+            myForm.destination = 1;
+            myForm.mnemonic = mnemonic_names[mnemonic_index[input]];
+            myForm.data_transfer_type = i_t_rm;
+            myForm.displacement = true;
+            myForm.data_avail = true;
+
+            right_encoder(myForm, champiArray, counter, out);
+            return;
+        } break;
+
+
+        case 0b10110000: {
+            bool wide = (champiArray[index] & 0b00001000) >> 3;
+            myForm.destination = 1;
+            myForm.wide = wide;
+            myForm.mnemonic = mnemonic_names[mnemonic_index[input]];
+            myForm.data_transfer_type = i_t_r;
+            myForm.displacement = false;
+            myForm.data_avail = true;
+
+            right_encoder(myForm, champiArray, counter, out);
+            return;
+
+        } break;
+
+        case 0b00000100:
+        case 0b00101100:
+        case 0b00111100:
+        case 0b10100000: {
+            // cmp's data if s:w=1 is the same in add and sub 01. the 01 is what should follow
+            myForm.wide = (champiArray[index] & 0b00000001);
+            myForm.destination = 1;
+            myForm.mnemonic = mnemonic_names[mnemonic_index[input]];
+            myForm.data_transfer_type = m_t_a;
+            myForm.displacement = false;
+            myForm.data_avail = true;
+            if(input == 0b00000100 || 0b00101100){
+                myForm.has_add = true;
+            }
+
+            right_encoder(myForm, champiArray, counter, out);
+            return;
+
+        } break;
+
+        case 0b10100010: {
+            myForm.wide = (champiArray[index] & 0b00000001);
+            myForm.destination = 0;
+            myForm.mnemonic = mnemonic_names[mnemonic_index[input]];
+            myForm.data_transfer_type = a_t_m;
+            myForm.displacement = false;
+            myForm.data_avail = true;
+
+            right_encoder(myForm, champiArray, counter, out);
+            return;
+
+        } break;
+
+//        case 0: {
+//            myForm.destination = (0b00000010 & champiArray[index]) << 1;
+//            myForm.wide = (0b00000001 & champiArray[index]);
+//        } break;
+
+        case 0b10000000: {
+            myForm.destination = (0b00000010 & champiArray[index]) << 1;
+            myForm.wide = (0b00000001 & champiArray[index]);
+
+            u8 input2 = champiArray[index + 1];
+            u8 input_reg = (0b00111000 & input2) >> 3;
+
+            if(input_reg == 0b101){
+                myForm.mnemonic = mnemonic_names[mnemonic_index[0b00101000]]; // for sub
+            }else if(input_reg == 0b111){
+                myForm.mnemonic = mnemonic_names[mnemonic_index[0b00111000]]; // for cmp
+            }else{
+                myForm.mnemonic = mnemonic_names[mnemonic_index[input]];
+            }
+            myForm.data_transfer_type = i_t_rm;
+            myForm.displacement = true;
+            myForm.data_avail = true;
+            myForm.has_add = true;
+
+            char s_reg[256];
+            char s_rm[256];
+
+            right_encoder(myForm, champiArray, counter, out);
+
+            return;
+
+        } break;
+
+        case 0b01110101: {
+            // there is no out of bounds error yet
+            // this area is about jumps
+            char stringified_numeric_data[20];
+            u8 data_counter = champiArray[index + 1];
+
+            out[0] = '\0';
+            size_t rem;
+
+            rem = OUT_SZ - strlen(out) - 1;
+            strncat(out, mnemonic_names[mnemonic_index[0b01110101]], rem);
+
+
+            if(data_counter > 128){ // negative
+                data_counter = 256-data_counter;
+                data_counter-=2;
+                snprintf(stringified_numeric_data, sizeof(stringified_numeric_data), "%d", data_counter);
+
+                rem = OUT_SZ - strlen(out) - 1;
+                strncat(out, " $", rem);
+                rem = OUT_SZ - strlen(out) - 1;
+                strncat(out, "-", rem);
+                rem = OUT_SZ - strlen(out) - 1;
+                strncat(out, stringified_numeric_data, rem);
+
+
+                counter[0]-=data_counter;
+                counter[0]-=2;
+            }else{
+                data_counter+=2;
+                snprintf(stringified_numeric_data, sizeof(stringified_numeric_data), "%d", data_counter);
+
+                rem = OUT_SZ - strlen(out) - 1;
+                strncat(out, " $", rem);
+                rem = OUT_SZ - strlen(out) - 1;
+                strncat(out, "+", rem);
+                rem = OUT_SZ - strlen(out) - 1;
+                strncat(out, stringified_numeric_data, rem);
+
+
+                counter[0]+=data_counter;
+                counter[0]-=2;
+                // bale data, tapos yung -2 pang puksa sa kopal+=2
+            }
+
+
+            // counter[0]+=data_counter;
+
+        } break;
+
+
+    };
+
+}
+
+
+
+
 // end--------------------------------------------------------------------
 
 struct aesd_dev aesd_device;
